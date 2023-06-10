@@ -27,3 +27,7 @@ To format the code, run `gradle spotlessApply` or `make format` in the root dire
 ### Cleaning
 
 To clean the project, run `gradle clean` or `make clean` in the root directory of the project.
+
+### Documentation
+
+The coursework brief has been copied from the codio guides section as I find it easier to read in markdown format and across one page. The file can be found at [BRIEF.md](BRIEF.md).
