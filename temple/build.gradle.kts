@@ -12,6 +12,7 @@ plugins {
     application
     id("io.freefair.lombok") version "8.0.1"
     id("net.ltgt.errorprone") version "latest.release"
+    id("com.diffplug.spotless") version "6.19.0"
 }
 
 
