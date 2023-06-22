@@ -1,7 +1,8 @@
 package student;
 
-import game.EscapeState;
-import game.ExplorationState;
+import game.*;
+
+import java.util.*;
 
 public class Explorer {
 
@@ -37,8 +38,79 @@ public class Explorer {
      */
     public void explore(ExplorationState state) {
         //TODO : Explore the cavern and find the orb
+
+        long currentLocation = state.getCurrentLocation();
+        int distanceToTarget = state.getDistanceToTarget();
+        Collection<NodeStatus> neighbours = state.getNeighbours();
+        System.out.println("enter_location=" + currentLocation +
+                "  distanceToTarget=" + distanceToTarget + " neigbours:" + neighbours);
+        NodeStatus current = new NodeStatus(currentLocation,distanceToTarget);
+
+        Stack<NodeStatus> nodeStack = new Stack<>();
+        List<NodeStatus> visitedNodes = new ArrayList<>();
+        nodeStack.push(current);
+
+        while (!nodeStack.isEmpty()){
+            current = nodeStack.pop();
+            if(!visitedNodes.contains(current)){
+                // skip moveTo() if this is an enter position
+                if(current.nodeID() != currentLocation){
+                    System.out.println(nodeStack);
+                    state.moveTo(current.nodeID());
+                    if(current.distanceToTarget() == 0)
+                        break;
+                }
+                visitedNodes.add(current);
+                int addedNewNeighbours = 0;
+                for (NodeStatus nodeNeighbour:  state.getNeighbours()) {
+                    if(!visitedNodes.contains(nodeNeighbour)){
+                        nodeStack.push(nodeNeighbour);
+                        addedNewNeighbours++;
+                    }
+                }
+                System.out.println("addedNewNeighbours=" + addedNewNeighbours);
+                // cycle graph need to go back
+                if(addedNewNeighbours == 0){
+
+                    Collections.reverse(visitedNodes);
+                    visitedNodes.remove(0);
+                    System.out.print("visited:"+visitedNodes);
+                    for(NodeStatus node: visitedNodes){
+                        System.out.println("node to step back" + node);
+                        state.moveTo(node.nodeID());
+                        if(state.getNeighbours().contains(nodeStack.peek())){
+                            //state.moveTo(node.nodeID());
+                            Collections.reverse(visitedNodes);
+                            break;
+                        }
+                    }
+                    //Collections.reverse(visitedNodesReversed);
+
+                }
+            }
+        }
     }
 
+
+/*
+    private NodeStatus minimizeWeighAlgorithm(Collection<NodeStatus> neighbours, int distanceToTarget){
+        NodeStatus newTileToMove;
+
+        List<NodeStatus> optionsToMove = new ArrayList<>();
+        for (NodeStatus node:neighboursN)
+            if (node.distanceToTarget() < distanceToTarget)
+                optionsToMove.add(node);
+        newTileToMove = optionsToMove.get(0);
+
+        for (NodeStatus node:optionsToMove)
+            if(newTileToMove.distanceToTarget() > node.distanceToTarget())
+                newTileToMove = node;
+
+        return newTileToMove;
+    }
+
+
+ */
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
      * gold as possible along the way. Your solution must ALWAYS escape before time runs
