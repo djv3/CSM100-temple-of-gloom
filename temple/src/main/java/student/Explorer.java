@@ -42,15 +42,16 @@ public class Explorer {
         long currentLocation = state.getCurrentLocation();
         int distanceToTarget = state.getDistanceToTarget();
         Collection<NodeStatus> neighbours = state.getNeighbours();
+        // TODO delete
         System.out.println("enter_location=" + currentLocation +
                 "  distanceToTarget=" + distanceToTarget + " neigbours:" + neighbours);
-        NodeStatus current = new NodeStatus(currentLocation,distanceToTarget);
 
+        NodeStatus current = new NodeStatus(currentLocation,distanceToTarget);
         Stack<NodeStatus> nodeStack = new Stack<>();
         List<NodeStatus> visitedNodes = new ArrayList<>();
         nodeStack.push(current);
 
-        while (!nodeStack.isEmpty()){
+        while (true){
             current = nodeStack.pop();
             if(!visitedNodes.contains(current)){
                 // skip moveTo() if this is an enter position
@@ -68,49 +69,60 @@ public class Explorer {
                         addedNewNeighbours++;
                     }
                 }
+                // TODO debug info
                 System.out.println("addedNewNeighbours=" + addedNewNeighbours);
+
                 // cycle graph need to go back
                 if(addedNewNeighbours == 0){
 
-                    Collections.reverse(visitedNodes);
-                    visitedNodes.remove(0);
+                    //Collections.reverse(visitedNodes);
+                    //visitedNodes.remove(0);
+                    //visitedNodes.remove(visitedNodes.size()-1);
+                    // TODO debug info
                     System.out.print("visited:"+visitedNodes);
+                    System.out.println("peek on stack" + nodeStack.peek());
+
+                    List<NodeStatus> backPath = new ArrayList<>();
+
+                    for(int i = visitedNodes.size()-2;i >= 0;i--){
+                        // TODO debug info
+                        System.out.println("node to step back" + visitedNodes.get(i));
+                        state.moveTo(visitedNodes.get(i).nodeID());
+
+                        backPath.add(visitedNodes.get(i));
+
+                        System.out.println("STACK IS EMPTY:" + nodeStack.isEmpty());
+
+                        if(!nodeStack.isEmpty() && state.getNeighbours().contains(nodeStack.peek())){
+                            System.out.println("STACK IS EMPTY:###" + nodeStack.isEmpty());
+                            System.out.println("STACK PEEK:***" + nodeStack.peek());
+                            break;
+                        }
+
+                    }
+
+                    for (NodeStatus node: backPath) {
+                        visitedNodes.add(node);
+                    }
+
+/*
                     for(NodeStatus node: visitedNodes){
+                        // TODO debug info
                         System.out.println("node to step back" + node);
+
                         state.moveTo(node.nodeID());
                         if(state.getNeighbours().contains(nodeStack.peek())){
-                            //state.moveTo(node.nodeID());
                             Collections.reverse(visitedNodes);
                             break;
                         }
                     }
-                    //Collections.reverse(visitedNodesReversed);
+*/
 
                 }
             }
         }
     }
 
-
-/*
-    private NodeStatus minimizeWeighAlgorithm(Collection<NodeStatus> neighbours, int distanceToTarget){
-        NodeStatus newTileToMove;
-
-        List<NodeStatus> optionsToMove = new ArrayList<>();
-        for (NodeStatus node:neighboursN)
-            if (node.distanceToTarget() < distanceToTarget)
-                optionsToMove.add(node);
-        newTileToMove = optionsToMove.get(0);
-
-        for (NodeStatus node:optionsToMove)
-            if(newTileToMove.distanceToTarget() > node.distanceToTarget())
-                newTileToMove = node;
-
-        return newTileToMove;
-    }
-
-
- */
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
      * gold as possible along the way. Your solution must ALWAYS escape before time runs
