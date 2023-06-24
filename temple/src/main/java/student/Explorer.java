@@ -42,86 +42,73 @@ public class Explorer {
         long currentLocation = state.getCurrentLocation();
         int distanceToTarget = state.getDistanceToTarget();
         Collection<NodeStatus> neighbours = state.getNeighbours();
-        // TODO delete
-        System.out.println("enter_location=" + currentLocation +
-                "  distanceToTarget=" + distanceToTarget + " neigbours:" + neighbours);
 
         NodeStatus current = new NodeStatus(currentLocation,distanceToTarget);
         Stack<NodeStatus> nodeStack = new Stack<>();
         List<NodeStatus> visitedNodes = new ArrayList<>();
+        visitedNodes.add(current);
         nodeStack.push(current);
 
         while (true){
+            // TODO del
+            //System.out.println("CURR_POS =" + state.getCurrentLocation());
+            //System.out.println("Current before POP:" + current);
+            //System.out.println("Stack before POP" + nodeStack);
+
             current = nodeStack.pop();
-            if(!visitedNodes.contains(current)){
-                // skip moveTo() if this is an enter position
+
+            // TODO del
+           //System.out.println("Stack after" + nodeStack);
+            //System.out.println("Current after POP:" + current);
+            //System.out.println("Stack after POP" + nodeStack);
+
+            if(neighbours.contains(current) || currentLocation == current.nodeID()){
+
                 if(current.nodeID() != currentLocation){
-                    System.out.println(nodeStack);
                     state.moveTo(current.nodeID());
+                    neighbours = state.getNeighbours();
+
                     if(current.distanceToTarget() == 0)
                         break;
-                }
-                visitedNodes.add(current);
-                int addedNewNeighbours = 0;
-                for (NodeStatus nodeNeighbour:  state.getNeighbours()) {
-                    if(!visitedNodes.contains(nodeNeighbour)){
-                        nodeStack.push(nodeNeighbour);
-                        addedNewNeighbours++;
+
+                    if(!visitedNodes.contains(current)){
+                        visitedNodes.add(current);
                     }
                 }
-                // TODO debug info
-                System.out.println("addedNewNeighbours=" + addedNewNeighbours);
 
-                // cycle graph need to go back
-                if(addedNewNeighbours == 0){
+                for (NodeStatus neighbour : neighbours) {
+                    if (!visitedNodes.contains(neighbour)) {
+                        nodeStack.push(neighbour);
+                    }
+                }
+            }
 
-                    //Collections.reverse(visitedNodes);
-                    //visitedNodes.remove(0);
-                    //visitedNodes.remove(visitedNodes.size()-1);
-                    // TODO debug info
-                    System.out.print("visited:"+visitedNodes);
-                    System.out.println("peek on stack" + nodeStack.peek());
+            // comeback
+            if(nodeStack.isEmpty()){
 
-                    List<NodeStatus> backPath = new ArrayList<>();
+                boolean stackEmpty = true;
 
-                    for(int i = visitedNodes.size()-2;i >= 0;i--){
-                        // TODO debug info
-                        System.out.println("node to step back" + visitedNodes.get(i));
+                for (int i = visitedNodes.size() - 2; i>=0;i--){
+
+                    if(neighbours.contains(visitedNodes.get(i)) && visitedNodes.get(i).nodeID() != currentLocation){
                         state.moveTo(visitedNodes.get(i).nodeID());
-
-                        backPath.add(visitedNodes.get(i));
-
-                        System.out.println("STACK IS EMPTY:" + nodeStack.isEmpty());
-
-                        if(!nodeStack.isEmpty() && state.getNeighbours().contains(nodeStack.peek())){
-                            System.out.println("STACK IS EMPTY:###" + nodeStack.isEmpty());
-                            System.out.println("STACK PEEK:***" + nodeStack.peek());
-                            break;
-                        }
-
+                        neighbours = state.getNeighbours();
                     }
 
-                    for (NodeStatus node: backPath) {
-                        visitedNodes.add(node);
-                    }
-
-/*
-                    for(NodeStatus node: visitedNodes){
-                        // TODO debug info
-                        System.out.println("node to step back" + node);
-
-                        state.moveTo(node.nodeID());
-                        if(state.getNeighbours().contains(nodeStack.peek())){
-                            Collections.reverse(visitedNodes);
+                    for (NodeStatus node:neighbours) {
+                        if(!visitedNodes.contains(node)){
+                            nodeStack.add(node);
+                            stackEmpty = false;
                             break;
                         }
                     }
-*/
-
+                    if (!stackEmpty)
+                        break;
                 }
             }
         }
     }
+
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much

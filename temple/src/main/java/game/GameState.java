@@ -211,7 +211,17 @@ public class GameState implements ExplorationState, EscapeState {
         if (stage != Stage.EXPLORE) {
             throw new IllegalStateException("moveTo(ID) can only be called while exploring!");
         }
-
+        /*
+        // TODO del
+        System.out.println(" ");
+        System.out.println("POSITION:" + position.getId());
+        System.out.println("MOVE TO :" + id);
+        System.out.println("NEIGHBOURS  TO POSITION:");
+        for (Node n:position.getNeighbours()) {
+            System.out.print("id=" +n.getId()+";");
+        }
+        System.out.print("");
+*/
         for (Node n : position.getNeighbours()) {
             if (n.getId() == id) {
                 position = n;
