@@ -50,17 +50,7 @@ public class Explorer {
         nodeStack.push(current);
 
         while (true){
-            // TODO del
-            //System.out.println("CURR_POS =" + state.getCurrentLocation());
-            //System.out.println("Current before POP:" + current);
-            //System.out.println("Stack before POP" + nodeStack);
-
             current = nodeStack.pop();
-
-            // TODO del
-           //System.out.println("Stack after" + nodeStack);
-            //System.out.println("Current after POP:" + current);
-            //System.out.println("Stack after POP" + nodeStack);
 
             if(neighbours.contains(current) || currentLocation == current.nodeID()){
 
