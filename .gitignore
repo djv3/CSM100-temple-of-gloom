@@ -8,3 +8,4 @@ temple/bin
 .vscode
 .idea
 logs/
+gradle.properties
