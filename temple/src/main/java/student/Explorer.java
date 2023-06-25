@@ -4,9 +4,7 @@ import game.*;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.FileHandler;
 import java.util.logging.Logger;
-import java.util.logging.SimpleFormatter;
 
 
 public class Explorer {
@@ -92,56 +90,31 @@ public class Explorer {
 
                     // check if the node we move is on enter node
                     if(trackNodes.get(i).nodeID() == entreLocation){
-                        // TODO del
-                        //logger.info("i=" + i);
-                        //logger.info("VISITED=" + trackNodes);
-                        //logger.info("CURR=" + state.getCurrentLocation());
-                        //logger.info("Move To Node=" + trackNodes.get(i));
-                        //logger.info("Neighbours TO CURR="+neighbours);
 
                         for (NodeStatus visitedN: trackNodes){
-                            // TODO del
-                            //logger.info("TRY TO MOVE=" + visitedN);
                             state.moveTo(visitedN.nodeID());
-                            //trackNodes.add(visitedN);
                             neighbours = state.getNeighbours();
                             for(NodeStatus nodeN:neighbours){
                                 if(!visitedNodes.contains(nodeN)){
                                     nodeStack.push(nodeN);
                                     stackEmpty = false;
-                                    // TODO del
-                                    //logger.info("ADDED TO STACK in Stack when i=0");
                                     break;
                                 }
                             }
                             if (!stackEmpty)
                                 break;
                         }
-
-                        // TODO del
-                        //logger.info("stack:" + nodeStack);
                     } else if (neighbours.contains(trackNodes.get(i))) {// if the node is not on enter
                         state.moveTo(trackNodes.get(i).nodeID());
-                        //trackNodes.add(visitedNodes.get(i));
                         neighbours = state.getNeighbours();
                         for (NodeStatus node:neighbours) {
-                            // TODO del
-                            //logger.info("neighNoce=" + node);
-                            //logger.info("trackNodes.get(i).nodeID()=" + trackNodes.get(i).nodeID());
-                            //logger.info("entreLocation=" + entreLocation);
-
                             if(!visitedNodes.contains(node)){
-                                // TODO del
-                                //logger.info("ADDED TO STACK when i=" + i);
                                 nodeStack.add(node);
                                 stackEmpty = false;
                                 break;
                             }
                         }
                     }
-
-                    // TODO del
-                    //logger.info("STACK="+nodeStack);
                     if (!stackEmpty)
                         break;
                 }
