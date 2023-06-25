@@ -2,7 +2,7 @@ build:
 	gradle build
 
 test:
-	gradle test
+	gradle test --info
 
 run:
 	gradle run

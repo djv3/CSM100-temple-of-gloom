@@ -2,6 +2,28 @@ package student;
 
 import game.EscapeState;
 import game.ExplorationState;
+import game.Node;
+import lombok.Data;
+
+import java.util.*;
+
+@Data
+class Distance {
+    private int g;
+    private int h;
+
+    public Distance(int g, int h) {
+        this.g = g;
+        this.h = h;
+    }
+    public static Distance of(int g, int h) {
+        return new Distance(g, h);
+    }
+
+    public int getF() {
+        return this.g + this.h;
+    }
+}
 
 public class Explorer {
 
@@ -63,6 +85,89 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void escape(EscapeState state) {
-        //TODO: Escape from the cavern before time runs out
+        // We can use different heuristics to greedily capture as much gold as possible!
+        Manhattan m = new Manhattan();
+        Collection<Node> path = aStar(state, m);
+
+        // currently just finding the shortest path and collecting any gold along the way.
+        for (Node n : path) {
+            state.moveTo(n);
+            if (state.getCurrentNode().getTile().getGold() > 0) {
+                state.pickUpGold();
+            }
+        }
+    }
+
+
+    public static Collection<Node> aStar(EscapeState state, Heuristic heuristic) {
+        // a star formula for a node's weight is f = g + h
+        // g is the distance from the start node to the current node
+        // h is the heuristic - the estimated distance from the current node to the exit node
+
+        // add start node to open list
+        // loop on the following:
+        // get lowest f value node from open list and add to closed list
+        // for each neighbour of the current node
+        // if neighbour is in closed list, continue
+        // if neighbour is not in open list, add to open list with a g value of current node g + 1
+        // else if neighbour is in open list, check if current node g + 1 is less than neighbour g
+        // stop when exit node is added to closed list or if open list is empty
+        int size = state.getVertices().size();
+        LinkedHashMap<Node, Distance> openList = LinkedHashMap.newLinkedHashMap(size);
+        LinkedList<Node> closedList = new LinkedList<>();
+
+        // add start node to open list
+        Node startNode = state.getCurrentNode();
+        Distance d = Distance.of(0, heuristic.getHeuristic(startNode, state.getExit()));
+        openList.put(startNode, d);
+        // While the open list is not empty
+        while (!openList.isEmpty()) {
+            // get the node with the lowest f value from the open list
+            Map.Entry<Node, Distance> currentNodeEntry = openList.entrySet().stream()
+                    .min(Comparator.comparingInt(e -> e.getValue().getF()))
+                    .get();
+
+            Node currentNode = currentNodeEntry.getKey();
+            Distance currentDistance = currentNodeEntry.getValue();
+
+            openList.remove(currentNode);
+            closedList.add(currentNode);
+
+            if (currentNode.equals(state.getExit())) {
+                break;
+            }
+
+            Collection<Node> neighbours = currentNode.getNeighbours();
+
+            for (Node neighbour : neighbours) {
+                if (closedList.contains(neighbour)) {
+                    continue;
+                }
+                // add the neighbour to the open list if it is not already in the open list and it is traversable
+                if (neighbour.getTile().getType().isOpen() && !openList.containsKey(neighbour)) {
+                    int g = currentDistance.getG() + 1;
+                    int h = heuristic.getHeuristic(neighbour, state.getExit());
+                    openList.put(neighbour, Distance.of(g, h));
+                } else if (openList.containsKey(neighbour)) {
+                    // if the neighbour is already in the open list, check if the current node g + 1 is less than the neighbour g
+                    int currentG = currentDistance.getG() + 1;
+                    int existingG = openList.get(neighbour).getG();
+                    if (currentG < existingG) {
+                        openList.put(
+                                neighbour,
+                                Distance.of(
+                                        currentG,
+                                        heuristic.getHeuristic(neighbour, state.getExit()
+                                        )
+                                )
+                        );
+                    }
+                }
+
+            }
+        }
+        ArrayList<Node> path = new ArrayList<>(closedList.size());
+        closedList.forEach(node -> path.add(0, node));
+        return path;
     }
 }
