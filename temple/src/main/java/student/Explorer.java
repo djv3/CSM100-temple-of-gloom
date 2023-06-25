@@ -42,17 +42,10 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void explore(ExplorationState state) throws IOException {
-
-        System.setProperty("java.util.logging.SimpleFormatter.format",
-                "[%1$tF %1$tT]  %5$s %n");
-        Logger logger = Logger.getLogger(Explorer.class.getName());
-        FileHandler fh = new FileHandler("C:\\Users\\an78d\\az\\projects\\uol\\scm100sdp\\coursework\\CSM100-temple-of-gloom\\log.txt");
-        logger.addHandler(fh);
-        SimpleFormatter formatter = new SimpleFormatter();
-        fh.setFormatter(formatter);
-
-
         //TODO : Explore the cavern and find the orb
+
+        // add logging
+        //Logger logger = LogHelper.getLogger("Explorer");
 
         long entreLocation = state.getCurrentLocation();
         int distanceToTarget = state.getDistanceToTarget();
@@ -61,140 +54,97 @@ public class Explorer {
         NodeStatus current = new NodeStatus(entreLocation,distanceToTarget);
         Stack<NodeStatus> nodeStack = new Stack<>();
         List<NodeStatus> visitedNodes = new ArrayList<>();
+        List<NodeStatus> trackNodes = new ArrayList<>();
         visitedNodes.add(current);
         nodeStack.push(current);
 
         while (true){
-            // TODO del
-            //System.out.println("CURR_POS =" + state.getCurrentLocation());
-            //System.out.println("Current before POP:" + current);
-            //System.out.println("Stack before POP" + nodeStack);
-
             current = nodeStack.pop();
 
-            // TODO del
-           //System.out.println("Stack after" + nodeStack);
-            //System.out.println("Current after POP:" + current);
-            //System.out.println("Stack after POP" + nodeStack);
-
+            // dfs search
             if(neighbours.contains(current) || entreLocation == current.nodeID()){
 
                 if(current.nodeID() != entreLocation){
                     state.moveTo(current.nodeID());
+                    trackNodes.add(current);
                     neighbours = state.getNeighbours();
 
                     if(current.distanceToTarget() == 0)
                         break;
 
-                    if(!visitedNodes.contains(current)){
+                    if(!visitedNodes.contains(current))
                         visitedNodes.add(current);
-                    }
-                }
 
+                }
                 for (NodeStatus neighbour : neighbours) {
-                    if (!visitedNodes.contains(neighbour)) {
+                    if (!visitedNodes.contains(neighbour))
                         nodeStack.push(neighbour);
-                    }
                 }
             }
 
-            // comeback
+            // comeback in case stack empty
             if(nodeStack.isEmpty()){
 
                 boolean stackEmpty = true;
 
-                // go to visited back nodes step by step
-                for (int i = visitedNodes.size() - 2; i>=0;i--){
+                // come back to the visited nodes step by step
+                for (int i = trackNodes.size() - 2; i>=0;i--){
 
                     // check if the node we move is on enter node
-                    if(visitedNodes.get(i).nodeID() == entreLocation){
-                        logger.info("ZERO");
+                    if(trackNodes.get(i).nodeID() == entreLocation){
                         // TODO del
-                        logger.info("i=" + i);
-                        logger.info("CURR=" + state.getCurrentLocation());
-                        //System.out.println("N TO MOVE="+state.getNeighbours());
-                        logger.info("N2 TO MOVE="+neighbours);
-                        logger.info("New Node=" + visitedNodes.get(i));
-                        //neighbours.remove(visitedNodes.get(i));
-                        //System.out.println("N TO MOVE="+state.getNeighbours());
-                        logger.info("N2 TO MOVE="+neighbours);
-                        //for(NodeStatus nodeN:neighbours){
-                            //nodeStack.push(nodeN);
-                        //}
-                        //state.moveTo(nodeStack.pop().nodeID());
-                        //neighbours = state.getNeighbours();
-                        System.out.println("stack:" + nodeStack);
-                    }
+                        //logger.info("i=" + i);
+                        //logger.info("VISITED=" + trackNodes);
+                        //logger.info("CURR=" + state.getCurrentLocation());
+                        //logger.info("Move To Node=" + trackNodes.get(i));
+                        //logger.info("Neighbours TO CURR="+neighbours);
 
-                    // if the node is not on enter
-                    if(neighbours.contains(visitedNodes.get(i))){
-                        state.moveTo(visitedNodes.get(i).nodeID());
-                        neighbours = state.getNeighbours();
-                    }
-                    // TODO del
-                    logger.info("stack:" + nodeStack);
-
-                    for (NodeStatus node:neighbours) {
-                        // TODO del
-                        logger.info("neighNoce=" + node);
-                        logger.info("visitedNodes.get(i).nodeID()=" + visitedNodes.get(i).nodeID());
-                        logger.info("entreLocation=" + entreLocation);
-
-                        if(!visitedNodes.contains(node)){
-                            System.out.println("ADDED TO STACK");
-                            nodeStack.add(node);
-                            stackEmpty = false;
-                            break;
-                        }
-
-                        /*
-                        if(visitedNodes.get(i).nodeID() == entreLocation){
+                        for (NodeStatus visitedN: trackNodes){
                             // TODO del
-                            System.out.println("NODE="+visitedNodes.get(i));
-                            System.out.println("ENTER_NODE="+entreLocation);
-                            System.out.println("*****¨VISITED******");
-                            System.out.print(visitedNodes);
-
-
-                            for (NodeStatus nodeVisited:visitedNodes) {
-
-                                if (nodeVisited.nodeID() != visitedNodes.get(i).nodeID()){
+                            //logger.info("TRY TO MOVE=" + visitedN);
+                            state.moveTo(visitedN.nodeID());
+                            //trackNodes.add(visitedN);
+                            neighbours = state.getNeighbours();
+                            for(NodeStatus nodeN:neighbours){
+                                if(!visitedNodes.contains(nodeN)){
+                                    nodeStack.push(nodeN);
+                                    stackEmpty = false;
                                     // TODO del
-                                    System.out.println("nodeVisited.nodeID()="+nodeVisited.nodeID());
-
-                                    state.moveTo(nodeVisited.nodeID());
-                                    neighbours = state.getNeighbours();
-                                    for (NodeStatus neigbor: neighbours) {
-                                        if(!visitedNodes.contains(neigbor)){
-                                            nodeStack.add(node);
-                                            stackEmpty = false;
-                                            break;
-                                        }
-                                    }
-                                    if (!stackEmpty)
-                                        break;
+                                    //logger.info("ADDED TO STACK in Stack when i=0");
+                                    break;
                                 }
-
-                                //nodeVisited.
                             }
-                            //TODO del
-                            System.out.println(" ");
-
-                            //nodeStack.add(node);
-                            //stackEmpty = false;
-                            //break;
+                            if (!stackEmpty)
+                                break;
                         }
-*/
-                    }
-                    // TODO del
-                    logger.info("STACK="+nodeStack);
 
+                        // TODO del
+                        //logger.info("stack:" + nodeStack);
+                    } else if (neighbours.contains(trackNodes.get(i))) {// if the node is not on enter
+                        state.moveTo(trackNodes.get(i).nodeID());
+                        //trackNodes.add(visitedNodes.get(i));
+                        neighbours = state.getNeighbours();
+                        for (NodeStatus node:neighbours) {
+                            // TODO del
+                            //logger.info("neighNoce=" + node);
+                            //logger.info("trackNodes.get(i).nodeID()=" + trackNodes.get(i).nodeID());
+                            //logger.info("entreLocation=" + entreLocation);
+
+                            if(!visitedNodes.contains(node)){
+                                // TODO del
+                                //logger.info("ADDED TO STACK when i=" + i);
+                                nodeStack.add(node);
+                                stackEmpty = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    // TODO del
+                    //logger.info("STACK="+nodeStack);
                     if (!stackEmpty)
                         break;
                 }
-
-
-
             }
         }
     }
