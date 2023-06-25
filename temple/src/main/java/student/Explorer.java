@@ -2,7 +2,12 @@ package student;
 
 import game.*;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.logging.FileHandler;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+
 
 public class Explorer {
 
@@ -36,62 +41,107 @@ public class Explorer {
      *
      * @param state the information available at the current state
      */
-    public void explore(ExplorationState state) {
+    public void explore(ExplorationState state) throws IOException {
         //TODO : Explore the cavern and find the orb
 
-        long currentLocation = state.getCurrentLocation();
+        // add logging
+        //Logger logger = LogHelper.getLogger("Explorer");
+
+        long entreLocation = state.getCurrentLocation();
         int distanceToTarget = state.getDistanceToTarget();
         Collection<NodeStatus> neighbours = state.getNeighbours();
 
-        NodeStatus current = new NodeStatus(currentLocation,distanceToTarget);
+        NodeStatus current = new NodeStatus(entreLocation,distanceToTarget);
         Stack<NodeStatus> nodeStack = new Stack<>();
         List<NodeStatus> visitedNodes = new ArrayList<>();
+        List<NodeStatus> trackNodes = new ArrayList<>();
         visitedNodes.add(current);
         nodeStack.push(current);
 
         while (true){
             current = nodeStack.pop();
 
-            if(neighbours.contains(current) || currentLocation == current.nodeID()){
+            // dfs search
+            if(neighbours.contains(current) || entreLocation == current.nodeID()){
 
-                if(current.nodeID() != currentLocation){
+                if(current.nodeID() != entreLocation){
                     state.moveTo(current.nodeID());
+                    trackNodes.add(current);
                     neighbours = state.getNeighbours();
 
                     if(current.distanceToTarget() == 0)
                         break;
 
-                    if(!visitedNodes.contains(current)){
+                    if(!visitedNodes.contains(current))
                         visitedNodes.add(current);
-                    }
-                }
 
+                }
                 for (NodeStatus neighbour : neighbours) {
-                    if (!visitedNodes.contains(neighbour)) {
+                    if (!visitedNodes.contains(neighbour))
                         nodeStack.push(neighbour);
-                    }
                 }
             }
 
-            // comeback
+            // comeback in case stack empty
             if(nodeStack.isEmpty()){
 
                 boolean stackEmpty = true;
 
-                for (int i = visitedNodes.size() - 2; i>=0;i--){
+                // come back to the visited nodes step by step
+                for (int i = trackNodes.size() - 2; i>=0;i--){
 
-                    if(neighbours.contains(visitedNodes.get(i)) && visitedNodes.get(i).nodeID() != currentLocation){
-                        state.moveTo(visitedNodes.get(i).nodeID());
+                    // check if the node we move is on enter node
+                    if(trackNodes.get(i).nodeID() == entreLocation){
+                        // TODO del
+                        //logger.info("i=" + i);
+                        //logger.info("VISITED=" + trackNodes);
+                        //logger.info("CURR=" + state.getCurrentLocation());
+                        //logger.info("Move To Node=" + trackNodes.get(i));
+                        //logger.info("Neighbours TO CURR="+neighbours);
+
+                        for (NodeStatus visitedN: trackNodes){
+                            // TODO del
+                            //logger.info("TRY TO MOVE=" + visitedN);
+                            state.moveTo(visitedN.nodeID());
+                            //trackNodes.add(visitedN);
+                            neighbours = state.getNeighbours();
+                            for(NodeStatus nodeN:neighbours){
+                                if(!visitedNodes.contains(nodeN)){
+                                    nodeStack.push(nodeN);
+                                    stackEmpty = false;
+                                    // TODO del
+                                    //logger.info("ADDED TO STACK in Stack when i=0");
+                                    break;
+                                }
+                            }
+                            if (!stackEmpty)
+                                break;
+                        }
+
+                        // TODO del
+                        //logger.info("stack:" + nodeStack);
+                    } else if (neighbours.contains(trackNodes.get(i))) {// if the node is not on enter
+                        state.moveTo(trackNodes.get(i).nodeID());
+                        //trackNodes.add(visitedNodes.get(i));
                         neighbours = state.getNeighbours();
-                    }
+                        for (NodeStatus node:neighbours) {
+                            // TODO del
+                            //logger.info("neighNoce=" + node);
+                            //logger.info("trackNodes.get(i).nodeID()=" + trackNodes.get(i).nodeID());
+                            //logger.info("entreLocation=" + entreLocation);
 
-                    for (NodeStatus node:neighbours) {
-                        if(!visitedNodes.contains(node)){
-                            nodeStack.add(node);
-                            stackEmpty = false;
-                            break;
+                            if(!visitedNodes.contains(node)){
+                                // TODO del
+                                //logger.info("ADDED TO STACK when i=" + i);
+                                nodeStack.add(node);
+                                stackEmpty = false;
+                                break;
+                            }
                         }
                     }
+
+                    // TODO del
+                    //logger.info("STACK="+nodeStack);
                     if (!stackEmpty)
                         break;
                 }
