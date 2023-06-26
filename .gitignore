@@ -7,3 +7,4 @@ build
 temple/bin
 .vscode
 .idea
+logs/

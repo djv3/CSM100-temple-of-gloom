@@ -16,6 +16,9 @@ To build the project, run `gradle build` or `make build` in the root directory o
 
 To run the project, run `gradle run` or `make run` in the root directory of the project.
 
+To run Temple-Of-Gloom use options -s and -n
+`gradle run --args='-s 1050 -n 10`
+
 ### Testing
 
 To run the tests, run `gradle test` or `make format` in the root directory of the project.

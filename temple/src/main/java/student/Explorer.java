@@ -1,8 +1,10 @@
 package student;
 
-import game.EscapeState;
-import game.ExplorationState;
-import game.Node;
+import game.*;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Logger;
 import lombok.Data;
 
 import java.util.*;
@@ -57,9 +59,89 @@ public class Explorer {
      *
      * @param state the information available at the current state
      */
-    public void explore(ExplorationState state) {
+    public void explore(ExplorationState state) throws IOException {
         //TODO : Explore the cavern and find the orb
+
+        // add logging
+        //Logger logger = LogHelper.getLogger("Explorer");
+
+        long entreLocation = state.getCurrentLocation();
+        int distanceToTarget = state.getDistanceToTarget();
+        Collection<NodeStatus> neighbours = state.getNeighbours();
+
+        NodeStatus current = new NodeStatus(entreLocation,distanceToTarget);
+        Stack<NodeStatus> nodeStack = new Stack<>();
+        List<NodeStatus> visitedNodes = new ArrayList<>();
+        List<NodeStatus> trackNodes = new ArrayList<>();
+        visitedNodes.add(current);
+        nodeStack.push(current);
+
+        while (true){
+            current = nodeStack.pop();
+
+            // dfs search
+            if(neighbours.contains(current) || entreLocation == current.nodeID()){
+
+                if(current.nodeID() != entreLocation){
+                    state.moveTo(current.nodeID());
+                    trackNodes.add(current);
+                    neighbours = state.getNeighbours();
+
+                    if(current.distanceToTarget() == 0)
+                        break;
+
+                    if(!visitedNodes.contains(current))
+                        visitedNodes.add(current);
+
+                }
+                for (NodeStatus neighbour : neighbours) {
+                    if (!visitedNodes.contains(neighbour))
+                        nodeStack.push(neighbour);
+                }
+            }
+
+            // comeback in case stack empty
+            if(nodeStack.isEmpty()){
+
+                boolean stackEmpty = true;
+
+                // come back to the visited nodes step by step
+                for (int i = trackNodes.size() - 2; i>=0;i--){
+
+                    // check if the node we move is on enter node
+                    if(trackNodes.get(i).nodeID() == entreLocation){
+
+                        for (NodeStatus visitedN: trackNodes){
+                            state.moveTo(visitedN.nodeID());
+                            neighbours = state.getNeighbours();
+                            for(NodeStatus nodeN:neighbours){
+                                if(!visitedNodes.contains(nodeN)){
+                                    nodeStack.push(nodeN);
+                                    stackEmpty = false;
+                                    break;
+                                }
+                            }
+                            if (!stackEmpty)
+                                break;
+                        }
+                    } else if (neighbours.contains(trackNodes.get(i))) {// if the node is not on enter
+                        state.moveTo(trackNodes.get(i).nodeID());
+                        neighbours = state.getNeighbours();
+                        for (NodeStatus node:neighbours) {
+                            if(!visitedNodes.contains(node)){
+                                nodeStack.add(node);
+                                stackEmpty = false;
+                                break;
+                            }
+                        }
+                    }
+                    if (!stackEmpty)
+                        break;
+                }
+            }
+        }
     }
+
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
