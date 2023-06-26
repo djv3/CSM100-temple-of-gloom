@@ -170,9 +170,10 @@ public class Explorer {
         // We can use different heuristics to greedily capture as much gold as possible!
         Manhattan m = new Manhattan();
         Collection<Node> path = aStar(state, m);
-
         // currently just finding the shortest path and collecting any gold along the way.
         for (Node n : path) {
+            System.out.println("Moving to " + n.getId());
+            System.out.println(n.getId());
             state.moveTo(n);
             if (state.getCurrentNode().getTile().getGold() > 0) {
                 state.pickUpGold();
@@ -200,7 +201,7 @@ public class Explorer {
 
         // add start node to open list
         Node startNode = state.getCurrentNode();
-        Distance d = Distance.of(0, heuristic.getHeuristic(startNode, state.getExit()));
+        Distance d = Distance.of(0, 0);
         openList.put(startNode, d);
         // While the open list is not empty
         while (!openList.isEmpty()) {
@@ -222,6 +223,7 @@ public class Explorer {
             Collection<Node> neighbours = currentNode.getNeighbours();
 
             for (Node neighbour : neighbours) {
+
                 if (closedList.contains(neighbour)) {
                     continue;
                 }
@@ -248,8 +250,8 @@ public class Explorer {
 
             }
         }
-        ArrayList<Node> path = new ArrayList<>(closedList.size());
-        closedList.forEach(node -> path.add(0, node));
-        return path;
+        // Need to remove the starting node, so we don't move to it
+        closedList.removeFirst();
+        return closedList;
     }
 }
