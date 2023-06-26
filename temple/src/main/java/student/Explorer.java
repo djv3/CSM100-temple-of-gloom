@@ -56,10 +56,11 @@ public class Explorer {
         visitedNodes.add(current);
         nodeStack.push(current);
 
+        // TODO split into two features: dfs algorithm and comeback?
         while (true){
             current = nodeStack.pop();
 
-            // dfs search
+            // dfs search algorithm
             if(neighbours.contains(current) || entreLocation == current.nodeID()){
 
                 if(current.nodeID() != entreLocation){
@@ -80,15 +81,15 @@ public class Explorer {
                 }
             }
 
-            // comeback in case stack empty
+            // comeback feature in case stack is empty and hero has to go back to the nearest fork with tiles he´s never been
             if(nodeStack.isEmpty()){
 
                 boolean stackEmpty = true;
 
-                // come back to the visited nodes step by step
+                // come back to the visited nodes step by step until he´s reached the fork and can push new tiles to a stack
                 for (int i = trackNodes.size() - 2; i>=0;i--){
 
-                    // check if the node we move is on enter node
+                    // check if the hero´s come back to the entre
                     if(trackNodes.get(i).nodeID() == entreLocation){
 
                         for (NodeStatus visitedN: trackNodes){
@@ -104,7 +105,7 @@ public class Explorer {
                             if (!stackEmpty)
                                 break;
                         }
-                    } else if (neighbours.contains(trackNodes.get(i))) {// if the node is not on enter
+                    } else if (neighbours.contains(trackNodes.get(i))) {
                         state.moveTo(trackNodes.get(i).nodeID());
                         neighbours = state.getNeighbours();
                         for (NodeStatus node:neighbours) {
