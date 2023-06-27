@@ -2,15 +2,10 @@ package student;
 
 import game.Node;
 
-/**
- * This class represents a heuristic used for weighting a node.
- * The heuristic is used in the A* algorithm.
- * The heuristic is used to estimate the distance between the current node and the exit node.
- */
-public class Manhattan extends Heuristic {
+public class Euclidean extends Heuristic {
     /**
      * Given a node and an exit node, this method returns the estimated distance between the
-     * two nodes using Manhattan distance (<a href="https://en.wikipedia.org/wiki/Taxicab_geometry">...</a>).
+     * two nodes using Euclidean distance (<a href="https://en.wikipedia.org/wiki/Euclidean_distance">...</a>).
      *
      * @param currentNode The current node.
      * @param exitNode    The exit node.
@@ -22,6 +17,6 @@ public class Manhattan extends Heuristic {
         int currentRow = currentNode.getTile().getRow();
         int exitColumn = exitNode.getTile().getColumn();
         int exitRow = exitNode.getTile().getRow();
-        return Math.abs(currentColumn - exitColumn) + Math.abs(currentRow - exitRow);
+        return (int) Math.sqrt(Math.pow(currentColumn - exitColumn, 2) + Math.pow(currentRow - exitRow, 2));
     }
 }

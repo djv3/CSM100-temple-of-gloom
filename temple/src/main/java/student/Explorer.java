@@ -1,33 +1,72 @@
 package student;
 
 import game.*;
+import lombok.Data;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.logging.Logger;
-import lombok.Data;
-
-import java.util.*;
-
-@Data
-class Distance {
-    private int g;
-    private int h;
-
-    public Distance(int g, int h) {
-        this.g = g;
-        this.h = h;
-    }
-    public static Distance of(int g, int h) {
-        return new Distance(g, h);
-    }
-
-    public int getF() {
-        return this.g + this.h;
-    }
-}
 
 public class Explorer {
+
+    public static Collection<NodeContainer> aStar(EscapeState state, Heuristic heuristic) {
+        // a star formula for a node's weight is f = g + h
+        // g is the distance from the start node to the current node
+        // h is the heuristic - the estimated distance from the current node to the exit node
+        Queue<NodeContainer> openSet = new PriorityQueue<>();
+        Queue<NodeContainer> closedSet = new PriorityQueue<>();
+        Node startingNode = state.getCurrentNode();
+        Node exitNode = state.getExit();
+        NodeContainer start = new NodeContainer(startingNode, null, 0, heuristic.estimate(startingNode, state.getExit()));
+        openSet.add(start);
+        System.out.println("Starting NodeContainer: " + start);
+
+        while (!openSet.isEmpty()) {
+            NodeContainer current = openSet.poll();
+            closedSet.add(current);
+
+            if (current.getNode().equals(state.getExit())) {
+                closedSet.forEach(nc -> System.out.println(nc.getF()));
+                System.out.println("Found exit node!");
+                return closedSet;
+            }
+
+            // Now we check each neighbour's value
+            for (Edge e : current.getNode().getExits()) {
+                Node neighbour = e.getOther(current.getNode());
+                NodeContainer neighbourContainer = new NodeContainer(
+                        neighbour,
+                        current.getNode(),
+                        current.getG() + e.length(),
+                        heuristic.estimate(neighbour, state.getExit())
+                );
+                if (closedSet.contains(neighbourContainer)) {
+                    continue;
+                }
+//                if (neighbour.equals(exitNode)) {
+//                    System.out.println("Found exit node!");
+//                    neighbourContainer.setParent(current.getNode());
+//                    closedSet.add(neighbourContainer);
+//                    return closedSet;
+//                }
+
+                if (!openSet.contains(neighbourContainer)) {
+                    openSet.add(neighbourContainer);
+                } else {
+                    for (NodeContainer n : openSet) {
+                        if (n.equals(neighbourContainer) && n.getG() > neighbourContainer.getG()) {
+                            openSet.remove(n);
+                            openSet.add(neighbourContainer);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        // Now we need to turn the closedPath into a list of nodes that the explorer can follow
+        System.out.println("Closed set size: " + closedSet.size());
+        closedSet.forEach(nc -> System.out.println(nc.getF()));
+        return closedSet;
+    }
 
     /**
      * Explore the cavern, trying to find the orb in as few steps as possible.
@@ -69,28 +108,28 @@ public class Explorer {
         int distanceToTarget = state.getDistanceToTarget();
         Collection<NodeStatus> neighbours = state.getNeighbours();
 
-        NodeStatus current = new NodeStatus(entreLocation,distanceToTarget);
+        NodeStatus current = new NodeStatus(entreLocation, distanceToTarget);
         Stack<NodeStatus> nodeStack = new Stack<>();
         List<NodeStatus> visitedNodes = new ArrayList<>();
         List<NodeStatus> trackNodes = new ArrayList<>();
         visitedNodes.add(current);
         nodeStack.push(current);
 
-        while (true){
+        while (true) {
             current = nodeStack.pop();
 
             // dfs search
-            if(neighbours.contains(current) || entreLocation == current.nodeID()){
+            if (neighbours.contains(current) || entreLocation == current.nodeID()) {
 
-                if(current.nodeID() != entreLocation){
+                if (current.nodeID() != entreLocation) {
                     state.moveTo(current.nodeID());
                     trackNodes.add(current);
                     neighbours = state.getNeighbours();
 
-                    if(current.distanceToTarget() == 0)
+                    if (current.distanceToTarget() == 0)
                         break;
 
-                    if(!visitedNodes.contains(current))
+                    if (!visitedNodes.contains(current))
                         visitedNodes.add(current);
 
                 }
@@ -101,21 +140,21 @@ public class Explorer {
             }
 
             // comeback in case stack empty
-            if(nodeStack.isEmpty()){
+            if (nodeStack.isEmpty()) {
 
                 boolean stackEmpty = true;
 
                 // come back to the visited nodes step by step
-                for (int i = trackNodes.size() - 2; i>=0;i--){
+                for (int i = trackNodes.size() - 2; i >= 0; i--) {
 
                     // check if the node we move is on enter node
-                    if(trackNodes.get(i).nodeID() == entreLocation){
+                    if (trackNodes.get(i).nodeID() == entreLocation) {
 
-                        for (NodeStatus visitedN: trackNodes){
+                        for (NodeStatus visitedN : trackNodes) {
                             state.moveTo(visitedN.nodeID());
                             neighbours = state.getNeighbours();
-                            for(NodeStatus nodeN:neighbours){
-                                if(!visitedNodes.contains(nodeN)){
+                            for (NodeStatus nodeN : neighbours) {
+                                if (!visitedNodes.contains(nodeN)) {
                                     nodeStack.push(nodeN);
                                     stackEmpty = false;
                                     break;
@@ -127,8 +166,8 @@ public class Explorer {
                     } else if (neighbours.contains(trackNodes.get(i))) {// if the node is not on enter
                         state.moveTo(trackNodes.get(i).nodeID());
                         neighbours = state.getNeighbours();
-                        for (NodeStatus node:neighbours) {
-                            if(!visitedNodes.contains(node)){
+                        for (NodeStatus node : neighbours) {
+                            if (!visitedNodes.contains(node)) {
                                 nodeStack.add(node);
                                 stackEmpty = false;
                                 break;
@@ -141,7 +180,6 @@ public class Explorer {
             }
         }
     }
-
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
@@ -168,90 +206,40 @@ public class Explorer {
      */
     public void escape(EscapeState state) {
         // We can use different heuristics to greedily capture as much gold as possible!
-        Manhattan m = new Manhattan();
-        Collection<Node> path = aStar(state, m);
+//        Manhattan m = new Manhattan();
+        Euclidean e = new Euclidean();
+        aStar(state, e);
         // currently just finding the shortest path and collecting any gold along the way.
-        for (Node n : path) {
-            System.out.println("Moving to " + n.getId());
-            System.out.println(n.getId());
-            state.moveTo(n);
-            if (state.getCurrentNode().getTile().getGold() > 0) {
-                state.pickUpGold();
-            }
-        }
+//        for (Node n : path) {
+//            System.out.println("Moving to " + n.getId());
+//            System.out.println(n.getId());
+//            state.moveTo(n);
+//            if (state.getCurrentNode().getTile().getGold() > 0) {
+//                state.pickUpGold();
+//            }
+//        }
+    }
+}
+
+@Data
+class NodeContainer implements Comparable<NodeContainer> {
+    private Node node;
+    private Node parent;
+    private int g;
+    private int h;
+
+    private int f;
+
+    public NodeContainer(Node n, Node p, int g, int h) {
+        this.node = n;
+        this.parent = p;
+        this.g = g;
+        this.h = h;
+        this.f = g + h;
     }
 
-
-    public static Collection<Node> aStar(EscapeState state, Heuristic heuristic) {
-        // a star formula for a node's weight is f = g + h
-        // g is the distance from the start node to the current node
-        // h is the heuristic - the estimated distance from the current node to the exit node
-
-        // add start node to open list
-        // loop on the following:
-        // get lowest f value node from open list and add to closed list
-        // for each neighbour of the current node
-        // if neighbour is in closed list, continue
-        // if neighbour is not in open list, add to open list with a g value of current node g + 1
-        // else if neighbour is in open list, check if current node g + 1 is less than neighbour g
-        // stop when exit node is added to closed list or if open list is empty
-        int size = state.getVertices().size();
-        LinkedHashMap<Node, Distance> openList = LinkedHashMap.newLinkedHashMap(size);
-        LinkedList<Node> closedList = new LinkedList<>();
-
-        // add start node to open list
-        Node startNode = state.getCurrentNode();
-        Distance d = Distance.of(0, 0);
-        openList.put(startNode, d);
-        // While the open list is not empty
-        while (!openList.isEmpty()) {
-            // get the node with the lowest f value from the open list
-            Map.Entry<Node, Distance> currentNodeEntry = openList.entrySet().stream()
-                    .min(Comparator.comparingInt(e -> e.getValue().getF()))
-                    .get();
-
-            Node currentNode = currentNodeEntry.getKey();
-            Distance currentDistance = currentNodeEntry.getValue();
-
-            openList.remove(currentNode);
-            closedList.add(currentNode);
-
-            if (currentNode.equals(state.getExit())) {
-                break;
-            }
-
-            Collection<Node> neighbours = currentNode.getNeighbours();
-
-            for (Node neighbour : neighbours) {
-
-                if (closedList.contains(neighbour)) {
-                    continue;
-                }
-                // add the neighbour to the open list if it is not already in the open list and it is traversable
-                if (neighbour.getTile().getType().isOpen() && !openList.containsKey(neighbour)) {
-                    int g = currentDistance.getG() + 1;
-                    int h = heuristic.getHeuristic(neighbour, state.getExit());
-                    openList.put(neighbour, Distance.of(g, h));
-                } else if (openList.containsKey(neighbour)) {
-                    // if the neighbour is already in the open list, check if the current node g + 1 is less than the neighbour g
-                    int currentG = currentDistance.getG() + 1;
-                    int existingG = openList.get(neighbour).getG();
-                    if (currentG < existingG) {
-                        openList.put(
-                                neighbour,
-                                Distance.of(
-                                        currentG,
-                                        heuristic.getHeuristic(neighbour, state.getExit()
-                                        )
-                                )
-                        );
-                    }
-                }
-
-            }
-        }
-        // Need to remove the starting node, so we don't move to it
-        closedList.removeFirst();
-        return closedList;
+    @Override
+    public int compareTo(NodeContainer o) {
+        return Integer.compare(this.f, o.f);
     }
 }

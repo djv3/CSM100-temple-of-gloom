@@ -15,5 +15,5 @@ public abstract class Heuristic {
      * @param exitNode    The exit node.
      * @return The estimated distance between the two nodes.
      */
-    public abstract int getHeuristic(Node currentNode, Node exitNode);
+    public abstract int estimate(Node currentNode, Node exitNode);
 }
