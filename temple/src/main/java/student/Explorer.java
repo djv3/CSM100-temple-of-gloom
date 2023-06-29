@@ -48,80 +48,152 @@ public class Explorer {
         long entreLocation = state.getCurrentLocation();
         int distanceToTarget = state.getDistanceToTarget();
         Collection<NodeStatus> neighbours = state.getNeighbours();
-
+        System.out.println("entreLocation=" + entreLocation);
         NodeStatus current = new NodeStatus(entreLocation,distanceToTarget);
-        Stack<NodeStatus> nodeStack = new Stack<>();
-        List<NodeStatus> visitedNodes = new ArrayList<>();
-        List<NodeStatus> trackNodes = new ArrayList<>();
-        visitedNodes.add(current);
-        nodeStack.push(current);
+        NodeA start = new NodeA(current);
 
-        // TODO split into two features: dfs algorithm and comeback?
-        while (true){
-            current = nodeStack.pop();
+        //record start(NodeStatus node, int f, int g, long parent);
 
-            // dfs search algorithm
-            if(neighbours.contains(current) || entreLocation == current.nodeID()){
 
-                if(current.nodeID() != entreLocation){
-                    state.moveTo(current.nodeID());
-                    trackNodes.add(current);
-                    neighbours = state.getNeighbours();
 
-                    if(current.distanceToTarget() == 0)
-                        break;
+        //PriorityQueue<start> closedList = new PriorityQueue<>();
 
-                    if(!visitedNodes.contains(current))
-                        visitedNodes.add(current);
 
-                }
-                for (NodeStatus neighbour : neighbours) {
-                    if (!visitedNodes.contains(neighbour))
-                        nodeStack.push(neighbour);
-                }
+        //PriorityQueue<NodeA> closedList = new PriorityQueue<>();
+        List <NodeA> closedList = new ArrayList<>();
+        PriorityQueue<NodeA> openList = new PriorityQueue<>();
+        start.setF(0);
+        //start.setNeighbors(state);
+
+        openList.add(start);
+
+        while(!openList.isEmpty()){
+
+            NodeA nodeA = openList.peek();
+
+            if(nodeA.getId() != entreLocation){
+                System.out.println("open list="+ openList);
+                System.out.println("move to node ID=" + nodeA.getId());
+
+                state.moveTo(nodeA.getId());
             }
+            nodeA.setNeighbors(state);
 
-            // comeback feature in case stack is empty and hero has to go back to the nearest fork with tiles he´s never been
-            if(nodeStack.isEmpty()){
 
-                boolean stackEmpty = true;
+            System.out.println("neighbours=" + nodeA.getNeighbors());
 
-                // come back to the visited nodes step by step until he´s reached the fork and can push new tiles to a stack
-                for (int i = trackNodes.size() - 2; i>=0;i--){
+            if(nodeA.getH() == 0)
+                break;
 
-                    // check if the hero´s come back to the entre
-                    if(trackNodes.get(i).nodeID() == entreLocation){
+            int num_neighbours = 0;
+            for (NodeStatus n: nodeA.getNeighbors()){
+                int gNode = nodeA.getG() + 1;
+                NodeA nodeN = new NodeA(n);
+                if (!openList.contains(nodeN) && !closedList.contains(nodeN)) {
+                    nodeN.setParent(nodeA);
+                    nodeN.setG(gNode);
+                    nodeN.setF(nodeN.getG()+nodeN.getH());
+                    openList.add(nodeN);
+                }else {
+                    if(gNode < nodeN.getG()){
+                        nodeN.setParent(nodeA);
+                        nodeN.setG(gNode);
+                        nodeN.setF(nodeN.getG()+nodeN.getH());
 
-                        for (NodeStatus visitedN: trackNodes){
-                            state.moveTo(visitedN.nodeID());
-                            neighbours = state.getNeighbours();
-                            for(NodeStatus nodeN:neighbours){
-                                if(!visitedNodes.contains(nodeN)){
-                                    nodeStack.push(nodeN);
-                                    stackEmpty = false;
-                                    break;
-                                }
-                            }
-                            if (!stackEmpty)
-                                break;
-                        }
-                    } else if (neighbours.contains(trackNodes.get(i))) {
-                        state.moveTo(trackNodes.get(i).nodeID());
-                        neighbours = state.getNeighbours();
-                        for (NodeStatus node:neighbours) {
-                            if(!visitedNodes.contains(node)){
-                                nodeStack.add(node);
-                                stackEmpty = false;
-                                break;
-                            }
+                        if(closedList.contains(nodeN)){
+                            closedList.remove(nodeN);
+                            openList.add(nodeN);
                         }
                     }
-                    if (!stackEmpty)
+                }
+                num_neighbours++;
+            }
+
+            System.out.println("num_neigh=" +num_neighbours);
+
+            openList.remove(nodeA);
+            closedList.add(nodeA);
+            System.out.println("open list =" + closedList);
+            System.out.println("closed list =" + closedList);
+
+            //NodeA nextElement = openList.element();
+            //System.out.println("next node" + nextElement);
+            //System.out.println("nextNode.getNeighbors().isEmpty()?? = " + element.getNeighbors().isEmpty());
+            //System.out.println("is_new_in_Neigh?? = " +is_new_in_Neigh(nodeA, nextElement));
+
+
+            /*
+           while (!is_new_in_Neigh(nodeA, nextElement)){
+               openList.remove(nodeA);
+               nodeA = nodeA.getParent();
+               state.moveTo(nodeA.getId());
+               nodeA.setNeighbors(state);
+               for (NodeStatus n:nodeA.getNeighbors()) {
+                   for (NodeA nA:openList) {
+                       if(n.nodeID() == nA.getId()){
+                           nodeA = nA;
+                           state.moveTo(nodeA.getId());
+                           nodeA.setNeighbors(state);
+                           openList.remove(nA);
+                           closedList.add(nA);
+                           break;
+                       }
+                   }
+               }
+           }
+
+             */
+/*
+            if(!is_new_in_Neigh(nodeA, nextElement)){
+                System.out.println("DO SMTH");
+                openList.remove(nodeA);
+                nodeA = nodeA.getParent();
+                state.moveTo(nodeA.getId());
+                nodeA.setNeighbors(state);
+                /*
+                for (int i = closedList.size()-2; i > 0;i--) {
+                    nodeA = closedList.get(i);
+                    state.moveTo(nodeA.getId());
+                    nodeA.setNeighbors(state);
+                    if(is_new_in_Neigh(nodeA, element) && !closedList.contains(element))
                         break;
+                }
+
+                 */
+            //}
+
+
+           // while (!is_new_in_Neigh(nodeA, element,closedList)){
+
+                //nodeA = closedList.element();
+                //state.moveTo(nodeA.getId());
+                //nodeA.setNeighbors(state);
+            //}
+        }
+
+
+    }
+
+    private  boolean is_new_in_Neigh(NodeA currentNodeA, NodeA newNodeA){
+        for (NodeStatus n:currentNodeA.getNeighbors()){
+            if(newNodeA.getId() == n.nodeID())
+                return true;
+        }
+
+        /*
+        if(!closedList.isEmpty() && !nodeA.getNeighbors().isEmpty()){
+            for (NodeStatus n:nodeA.getNeighbors()) {
+                for (NodeA nA:closedList) {
+                    if(n.nodeID() == nA.getId())
+                        return true;
                 }
             }
         }
+         */
+        return false;
     }
+
+
 
 
     /**
