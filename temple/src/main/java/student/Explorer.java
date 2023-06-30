@@ -47,12 +47,29 @@ public class Explorer {
 
         long entreLocation = state.getCurrentLocation();
         int distanceToTarget = state.getDistanceToTarget();
-        Collection<NodeStatus> neighbours = state.getNeighbours();
-        System.out.println("entreLocation=" + entreLocation);
-        NodeStatus current = new NodeStatus(entreLocation,distanceToTarget);
-        NodeA start = new NodeA(current);
 
-        //record start(NodeStatus node, int f, int g, long parent);
+        System.out.println("entreLocation=" + entreLocation);
+        NodeStatus start = new NodeStatus(entreLocation,distanceToTarget);
+        NodeA startA = new NodeA(0, start);
+        PriorityQueue<NodeA> openQ = new PriorityQueue<>();
+        Map<NodeA, NodeA> cameFrom = new HashMap<>();
+        Map<NodeA,Integer> costSoFar = new HashMap<>();
+        openQ.add(startA);
+        cameFrom.put(startA,null);
+        costSoFar.put(startA,0);
+
+        while (!openQ.isEmpty()){
+            NodeA current = openQ.poll();
+            if(current.nodeStatus().nodeID() != entreLocation)
+                state.moveTo(current.nodeStatus().nodeID());
+
+            Collection<NodeStatus> neighbours = state.getNeighbours();
+
+            for(NodeStatus n:neighbours){
+                int newCost = costSoFar.get(current) + state.getDistanceToTarget();
+            }
+        }
+
 
 
 
@@ -60,13 +77,15 @@ public class Explorer {
 
 
         //PriorityQueue<NodeA> closedList = new PriorityQueue<>();
-        List <NodeA> closedList = new ArrayList<>();
-        PriorityQueue<NodeA> openList = new PriorityQueue<>();
-        start.setF(0);
+        //List <NodeA> closedList = new ArrayList<>();
+        //PriorityQueue<NodeA> closedList
+        //start.setF(0);
         //start.setNeighbors(state);
 
-        openList.add(start);
+        //openList.add(start);
 
+
+/*
         while(!openList.isEmpty()){
 
             NodeA nodeA = openList.peek();
@@ -78,9 +97,11 @@ public class Explorer {
                 state.moveTo(nodeA.getId());
             }
             nodeA.setNeighbors(state);
+            //List<Long> neighbors = state.getNeighbours().stream()
+            //System.out.println("stream="+ state.getNeighbours().stream());
 
 
-            System.out.println("neighbours=" + nodeA.getNeighbors());
+            System.out.println("neighbours=" + nodeA.getNeighbors().stream().filter(neighbor -> !closedList.contains(neighbor.nodeID())));
 
             if(nodeA.getH() == 0)
                 break;
@@ -115,60 +136,6 @@ public class Explorer {
             closedList.add(nodeA);
             System.out.println("open list =" + closedList);
             System.out.println("closed list =" + closedList);
-
-            //NodeA nextElement = openList.element();
-            //System.out.println("next node" + nextElement);
-            //System.out.println("nextNode.getNeighbors().isEmpty()?? = " + element.getNeighbors().isEmpty());
-            //System.out.println("is_new_in_Neigh?? = " +is_new_in_Neigh(nodeA, nextElement));
-
-
-            /*
-           while (!is_new_in_Neigh(nodeA, nextElement)){
-               openList.remove(nodeA);
-               nodeA = nodeA.getParent();
-               state.moveTo(nodeA.getId());
-               nodeA.setNeighbors(state);
-               for (NodeStatus n:nodeA.getNeighbors()) {
-                   for (NodeA nA:openList) {
-                       if(n.nodeID() == nA.getId()){
-                           nodeA = nA;
-                           state.moveTo(nodeA.getId());
-                           nodeA.setNeighbors(state);
-                           openList.remove(nA);
-                           closedList.add(nA);
-                           break;
-                       }
-                   }
-               }
-           }
-
-             */
-/*
-            if(!is_new_in_Neigh(nodeA, nextElement)){
-                System.out.println("DO SMTH");
-                openList.remove(nodeA);
-                nodeA = nodeA.getParent();
-                state.moveTo(nodeA.getId());
-                nodeA.setNeighbors(state);
-                /*
-                for (int i = closedList.size()-2; i > 0;i--) {
-                    nodeA = closedList.get(i);
-                    state.moveTo(nodeA.getId());
-                    nodeA.setNeighbors(state);
-                    if(is_new_in_Neigh(nodeA, element) && !closedList.contains(element))
-                        break;
-                }
-
-                 */
-            //}
-
-
-           // while (!is_new_in_Neigh(nodeA, element,closedList)){
-
-                //nodeA = closedList.element();
-                //state.moveTo(nodeA.getId());
-                //nodeA.setNeighbors(state);
-            //}
         }
 
 
@@ -179,19 +146,19 @@ public class Explorer {
             if(newNodeA.getId() == n.nodeID())
                 return true;
         }
+        return false;
 
-        /*
-        if(!closedList.isEmpty() && !nodeA.getNeighbors().isEmpty()){
-            for (NodeStatus n:nodeA.getNeighbors()) {
-                for (NodeA nA:closedList) {
-                    if(n.nodeID() == nA.getId())
-                        return true;
-                }
-            }
+ */
+    }
+    private boolean is_node_in_list(NodeStatus m, PriorityQueue<NodeA> list){
+        for (NodeA nA: list) {
+            if(m.nodeID() == nA.nodeStatus().nodeID())
+                return true;
         }
-         */
         return false;
     }
+
+
 
 
 
