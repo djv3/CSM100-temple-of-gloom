@@ -66,11 +66,9 @@ public class Explorer {
                     openSet.add(m);
                 }else {
                     int costPathToNode = current.g() + 1;
-                    if(costPathToNode < m.g()){
-                        if(is_node_in_list(m, closedSet)){
+                    if(costPathToNode < m.g() && is_node_in_list(m, closedSet)){
                             closedSet.remove(m);
                             openSet.add(m);
-                        }
                     }
                 }
             }
@@ -106,7 +104,6 @@ public class Explorer {
         return  neighboursA;
     }
 
-
     private boolean is_node_in_list(NodeA m, PriorityQueue<NodeA> list){
         for (NodeA nA: list) {
             if(m.nodeStatus().nodeID() == nA.nodeStatus().nodeID())
@@ -114,12 +111,6 @@ public class Explorer {
         }
         return false;
     }
-
-
-
-
-
-
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
