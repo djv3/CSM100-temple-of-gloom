@@ -8,64 +8,47 @@ import java.util.*;
 
 public class Explorer {
 
-    public static Collection<NodeContainer> aStar(EscapeState state, Heuristic heuristic) {
+    public static LinkedList<Node> aStar(EscapeState state, Heuristic heuristic) {
         // a star formula for a node's weight is f = g + h
         // g is the distance from the start node to the current node
         // h is the heuristic - the estimated distance from the current node to the exit node
-        Queue<NodeContainer> openSet = new PriorityQueue<>();
-        Queue<NodeContainer> closedSet = new PriorityQueue<>();
-        Node startingNode = state.getCurrentNode();
-        Node exitNode = state.getExit();
-        NodeContainer start = new NodeContainer(startingNode, null, 0, heuristic.estimate(startingNode, state.getExit()));
-        openSet.add(start);
-        System.out.println("Starting NodeContainer: " + start);
-
-        while (!openSet.isEmpty()) {
-            NodeContainer current = openSet.poll();
-            closedSet.add(current);
-
-            if (current.getNode().equals(state.getExit())) {
-                closedSet.forEach(nc -> System.out.println(nc.getF()));
-                System.out.println("Found exit node!");
-                return closedSet;
+        HashMap<Node, Integer> open = new HashMap<>(); // k, v of node, g (distance from start)
+//        LinkedHashMap<Node, Integer> closed = new LinkedHashMap<>(); // evaluated neighbours
+        LinkedList<Node> closed = new LinkedList<>();
+        Node start = state.getCurrentNode();
+        Node exit = state.getExit();
+        open.put(start, 0);
+        while (!open.isEmpty()) {
+            Map.Entry<Node, Integer> current = open.entrySet()
+                    .stream()
+                    .min(Comparator.comparingInt(e -> e.getValue() + heuristic.estimate(e.getKey(), exit)))
+                    .orElseThrow();
+            Node currentNode = current.getKey();
+            int currentG = current.getValue();
+            Set<Node> allNeighbours = currentNode.getNeighbours();
+            if (currentNode.equals(exit)) {
+                System.out.println("Found exit");
+                // if we have reached the exit node, return the path
+                closed.add(currentNode);
+                return closed;
             }
 
-            // Now we check each neighbour's value
-            for (Edge e : current.getNode().getExits()) {
-                Node neighbour = e.getOther(current.getNode());
-                NodeContainer neighbourContainer = new NodeContainer(
-                        neighbour,
-                        current.getNode(),
-                        current.getG() + e.length(),
-                        heuristic.estimate(neighbour, state.getExit())
-                );
-                if (closedSet.contains(neighbourContainer)) {
+            // evaluate the neighbours, adding them to open
+            for (Edge edge: currentNode.getExits()) {
+                Node neighbour = edge.getOther(currentNode);
+                int neighbourG = currentG + edge.length();
+
+                // if we've already added the neighbour to the closed list, skip it
+                if (closed.contains(neighbour) || !allNeighbours.contains(neighbour)) {
                     continue;
                 }
-//                if (neighbour.equals(exitNode)) {
-//                    System.out.println("Found exit node!");
-//                    neighbourContainer.setParent(current.getNode());
-//                    closedSet.add(neighbourContainer);
-//                    return closedSet;
-//                }
 
-                if (!openSet.contains(neighbourContainer)) {
-                    openSet.add(neighbourContainer);
-                } else {
-                    for (NodeContainer n : openSet) {
-                        if (n.equals(neighbourContainer) && n.getG() > neighbourContainer.getG()) {
-                            openSet.remove(n);
-                            openSet.add(neighbourContainer);
-                            break;
-                        }
-                    }
-                }
+                open.put(neighbour, neighbourG);
             }
+            open.remove(currentNode);
+            closed.add(currentNode);
         }
-        // Now we need to turn the closedPath into a list of nodes that the explorer can follow
-        System.out.println("Closed set size: " + closedSet.size());
-        closedSet.forEach(nc -> System.out.println(nc.getF()));
-        return closedSet;
+        return closed;
     }
 
     /**
@@ -206,40 +189,18 @@ public class Explorer {
      */
     public void escape(EscapeState state) {
         // We can use different heuristics to greedily capture as much gold as possible!
-//        Manhattan m = new Manhattan();
-        Euclidean e = new Euclidean();
-        aStar(state, e);
-        // currently just finding the shortest path and collecting any gold along the way.
-//        for (Node n : path) {
-//            System.out.println("Moving to " + n.getId());
-//            System.out.println(n.getId());
-//            state.moveTo(n);
-//            if (state.getCurrentNode().getTile().getGold() > 0) {
-//                state.pickUpGold();
-//            }
-//        }
-    }
-}
-
-@Data
-class NodeContainer implements Comparable<NodeContainer> {
-    private Node node;
-    private Node parent;
-    private int g;
-    private int h;
-
-    private int f;
-
-    public NodeContainer(Node n, Node p, int g, int h) {
-        this.node = n;
-        this.parent = p;
-        this.g = g;
-        this.h = h;
-        this.f = g + h;
-    }
-
-    @Override
-    public int compareTo(NodeContainer o) {
-        return Integer.compare(this.f, o.f);
+        Manhattan m = new Manhattan();
+        LinkedList<Node> path = aStar(state, m);
+        System.out.println("Exit node is: " + state.getExit());
+        System.out.println("Path is: " + path);
+        System.out.println("Path length is: " + path.size());
+        path.removeFirst();
+        for (Node n : path) {
+            System.out.println("Moving from " + state.getCurrentNode() + " to " + n);
+            state.moveTo(n);
+            if (state.getCurrentNode().getTile().getGold() > 0) {
+                state.pickUpGold();
+            }
+        }
     }
 }
