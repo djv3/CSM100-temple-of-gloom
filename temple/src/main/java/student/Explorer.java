@@ -8,13 +8,14 @@ import java.util.*;
 
 public class Explorer {
 
-    public static LinkedList<Node> aStar(EscapeState state, Heuristic heuristic) {
+    public static ArrayList<Node> aStar(EscapeState state, Heuristic heuristic) {
         // a star formula for a node's weight is f = g + h
         // g is the distance from the start node to the current node
         // h is the heuristic - the estimated distance from the current node to the exit node
         HashMap<Node, Integer> open = new HashMap<>(); // k, v of node, g (distance from start)
-//        LinkedHashMap<Node, Integer> closed = new LinkedHashMap<>(); // evaluated neighbours
-        LinkedList<Node> closed = new LinkedList<>();
+        HashMap<Node, Integer> closed = new HashMap<>();
+        HashMap<Node, Node> parent = new HashMap<>(); // k, v of node, parent node
+        ArrayList<Node> path = new ArrayList<>();
         Node start = state.getCurrentNode();
         Node exit = state.getExit();
         open.put(start, 0);
@@ -23,33 +24,43 @@ public class Explorer {
                     .stream()
                     .min(Comparator.comparingInt(e -> e.getValue() + heuristic.estimate(e.getKey(), exit)))
                     .orElseThrow();
+
             Node currentNode = current.getKey();
             int currentG = current.getValue();
-            Set<Node> allNeighbours = currentNode.getNeighbours();
-            if (currentNode.equals(exit)) {
-                System.out.println("Found exit");
-                // if we have reached the exit node, return the path
-                closed.add(currentNode);
-                return closed;
-            }
 
-            // evaluate the neighbours, adding them to open
-            for (Edge edge: currentNode.getExits()) {
-                Node neighbour = edge.getOther(currentNode);
-                int neighbourG = currentG + edge.length();
+            Set<Node> neighbours = currentNode.getNeighbours();
 
-                // if we've already added the neighbour to the closed list, skip it
-                if (closed.contains(neighbour) || !allNeighbours.contains(neighbour)) {
+            for (Node neighbour : neighbours) {
+                if (neighbour.equals(exit)) {
+                    Node node = currentNode;
+                    while (node != null) {
+                        path.add(0, node); // walk backwards from exit to start
+                        node = parent.get(node);
+                    }
+                    path.add(exit);
+                    return path;
+                }
+                if (closed.containsKey(neighbour)) {
                     continue;
                 }
-
-                open.put(neighbour, neighbourG);
+                int neighbourG = currentG + currentNode.getEdge(neighbour).length;
+                if (open.containsKey(neighbour)) {
+                    if (neighbourG < open.get(neighbour)) {
+                        open.put(neighbour, neighbourG);
+                        parent.put(neighbour, currentNode);
+                    }
+                } else {
+                    open.put(neighbour, neighbourG);
+                    parent.put(neighbour, currentNode);
+                }
             }
+
             open.remove(currentNode);
-            closed.add(currentNode);
+            closed.put(currentNode, currentG);
+            }
+
+        return path;
         }
-        return closed;
-    }
 
     /**
      * Explore the cavern, trying to find the orb in as few steps as possible.
@@ -190,11 +201,13 @@ public class Explorer {
     public void escape(EscapeState state) {
         // We can use different heuristics to greedily capture as much gold as possible!
         Manhattan m = new Manhattan();
-        LinkedList<Node> path = aStar(state, m);
+        ArrayList<Node> path = aStar(state, m);
+        System.out.println("Current node is: " + state.getCurrentNode());
         System.out.println("Exit node is: " + state.getExit());
         System.out.println("Path is: " + path);
         System.out.println("Path length is: " + path.size());
-        path.removeFirst();
+        System.out.println("Time remaining is: " + state.getTimeRemaining());
+        path.remove(0);
         for (Node n : path) {
             System.out.println("Moving from " + state.getCurrentNode() + " to " + n);
             state.moveTo(n);
@@ -202,5 +215,27 @@ public class Explorer {
                 state.pickUpGold();
             }
         }
+
+//        Iterator<Node> iter = path.iterator();
+//
+//        while (iter.hasNext()) {
+//            Node first = iter.next(); // just cycling past it, so we don't attempt to move to the node we're already on.
+//            if (!iter.hasNext()) {
+//                return;
+//            }
+//            Node n = iter.next();
+//            System.out.println("Moving from " + state.getCurrentNode() + " to " + n);
+//            state.moveTo(n);
+//            if (state.getCurrentNode().getTile().getGold() > 0) {
+//                state.pickUpGold();
+//            }
+//            ArrayList<Node> shortest = aStar(state, m);
+//            ArrayList<Node> greedy = aStar(state, m);
+//            if (shortest.size() * 1.1 <= state.getTimeRemaining()) { // added a 10% buffer to the shortest path for safety
+//                iter = shortest.iterator();
+//            } else {
+//                iter = greedy.iterator();
+//            }
+//        }
     }
 }
