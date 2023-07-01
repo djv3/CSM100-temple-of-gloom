@@ -2,9 +2,11 @@ package student;
 
 import game.NodeStatus;
 
-import java.util.Collection;
 
-public record NodeA(
-                    int f,
-                    NodeStatus nodeStatus
-                    ) {}
+public record NodeA (NodeStatus nodeStatus, int f, int g, NodeA parent) implements Comparable<NodeA> {
+@Override
+    public int compareTo(NodeA n) {
+        return Integer.compare(this.f,n.f);
+    }
+}
+
