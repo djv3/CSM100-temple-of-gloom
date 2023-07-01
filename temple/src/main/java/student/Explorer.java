@@ -145,14 +145,14 @@ public class Explorer {
                     }
                 }
                 // If exit is one of the neighbours, then a path has been found so exit loop
-                if (n == finishNode) {
+                if (n.equals(finishNode)) {
                     pathFound = true;
                 }
             }
 
             // Mark lowest node as visited
             visitedNodes.put(minEntry.getKey(), minEntry.getValue());
-            unvisitedNodes.remove((minEntry.getKey()));
+            unvisitedNodes.remove(minEntry.getKey());
         }
 
         // Create escape path from finish to start
@@ -178,7 +178,7 @@ public class Explorer {
             // Add node to list
             escapePath.add(currentNode);
 
-            if (lowestNeighbour == startNode) {
+            if (lowestNeighbour.equals(startNode)) {
                 startFound = true;
             } else {
                 visitedNodes.remove(lowestNeighbour);
