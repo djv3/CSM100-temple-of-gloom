@@ -1,12 +1,7 @@
 package student;
 
 import game.*;
-
-import java.io.IOException;
 import java.util.*;
-import java.util.logging.Logger;
-
-import static java.lang.Math.abs;
 
 
 public class Explorer {
@@ -41,25 +36,21 @@ public class Explorer {
      *
      * @param state the information available at the current state
      */
-    public void explore(ExplorationState state) throws IOException {
-        
+    public void explore(ExplorationState state)  {
+
         NodeStatus entrePoint = new NodeStatus(state.getCurrentLocation(),state.getDistanceToTarget());
         NodeA start = new NodeA( entrePoint, state.getDistanceToTarget(), 0, null);
-        Map<NodeA, NodeA> parent = new HashMap<>();
-        //Map<NodeA, Integer> gScore = new HashMap<>();
-        //Map<NodeA, Integer> fScore = new HashMap<>();
 
         PriorityQueue<NodeA> openSet = new PriorityQueue<>();
         openSet.add(start);
         PriorityQueue<NodeA> closedSet = new PriorityQueue<>();
-
 
         while (true){
             // A* - algorithm
             NodeA current = openSet.poll();
             openSet.clear();
             closedSet.add(current);
-            //System.out.println("current Node" + current);
+
             if(current.nodeStatus().nodeID() != entrePoint.nodeID()){
                 state.moveTo(current.nodeStatus().nodeID());
             }
@@ -68,27 +59,14 @@ public class Explorer {
             if(current.nodeStatus().distanceToTarget() == 0)
                 break;
 
-            //System.out.println("openSet after poll:" + openSet);
-
             List<NodeA> neighboursA = getNeighborsA(state.getNeighbours(),current);
 
-
-           // System.out.println("closedSet" + closedSet);
-
             for (NodeA m:neighboursA){
-                //if(!openSet.contains(m) && !closedSet.contains(m)){
                 if(!is_node_in_list(m, openSet) && !is_node_in_list(m, closedSet)){
                     openSet.add(m);
-                    //parent.put(m,current);
-                    //gScore.put(m,current.g());
-                    //fScore.put(m, m.f());
                 }else {
                     int costPathToNode = current.g() + 1;
                     if(costPathToNode < m.g()){
-                        //parent.put(m,current);
-                        //gScore.put(m,current.g());
-                        //fScore.put(m, m.f());
-                        //if(closedSet.contains(m)){
                         if(is_node_in_list(m, closedSet)){
                             closedSet.remove(m);
                             openSet.add(m);
@@ -97,48 +75,24 @@ public class Explorer {
                 }
             }
 
-
-
-            //openSet.remove(current);
-            // Trace back in case
-
             NodeA nextMove = openSet.peek();
-            ///NodeA backNode = parent.get(current);
 
-
-
+            // Trace back in case openSet is empty
             while (nextMove == null){
                 NodeA backNode = current.parent();
-                //System.out.println("XXXXXXXXXXXXXX");
-
                 state.moveTo(backNode.nodeStatus().nodeID());
 
                 List<NodeA> neighboursBackNode = getNeighborsA(state.getNeighbours(),backNode);
 
-                // 2 conditions
-                // 1) m.nodeStatus().distanceToTarget() < backNode.nodeStatus().distanceToTarget()
-                // 2) m.nodeStatus().distanceToTarget() < pointComeBack.nodeStatus().distanceToTarget()
                 for (NodeA m:neighboursBackNode) {
                     if(!is_node_in_list(m, closedSet)){
-                        //System.out.println("AAAAAAAAAAAAAAAa");
                         openSet.add(m);
-                        //if(m.nodeStatus().distanceToTarget() < backNode.nodeStatus().distanceToTarget()){
-                            //System.out.println("BBBBBBBBBBBBBBBBBB");
-                            //openSet.add(m);
-                            //break;
-                        //}
                     }
                 }
 
                 nextMove = openSet.peek();
                 current = backNode;
             }
-
-
-
-
-            //System.out.println("open set at the end" + openSet);
-            //System.out.println("***************************************");
         }
     }
 
@@ -149,7 +103,6 @@ public class Explorer {
             int f = g + n.distanceToTarget();
             neighboursA.add(new NodeA(n, f, g, current));
         }
-        //System.out.println("GET NEIGHBORS" + neighboursA);
         return  neighboursA;
     }
 
