@@ -46,6 +46,35 @@ public class Explorer {
      * @param state the information available at the current state
      */
 
+    public void explore(ExplorationState state) {
+        //TODO : Explore the cavern and find the orb
+        if (state.getDistanceToTarget() == 0) {
+            return;
+        }
+        //previous node
+        ArrayDeque<Long> savedMoves = new ArrayDeque<>();
+        ArrayDeque<Long> visitedPath = new ArrayDeque<>();
+
+       while (state.getDistanceToTarget() > 0) {
+           // push current location onto path taken
+           visitedPath.push(state.getCurrentLocation());
+           // find all neighbors and order with the neighbor closest to the target first
+           List<Long> neighbors = state.getNeighbours().stream().filter(neighbor -> !visitedPath.contains(neighbor.nodeID()))
+                   .sorted(Comparator.comparing(NodeStatus::distanceToTarget))
+                   .map(NodeStatus::nodeID).toList();
+           //Move to the neighbor closest to the target
+           if (!neighbors.isEmpty()) {
+               state.moveTo(neighbors.get(0));
+               // add our current location to the saved moves in case we need to backtrack
+               savedMoves.addFirst(state.getCurrentLocation());
+
+           }else{
+               // no more neighbors ahead, backtrack to the last available neighbor
+               state.moveTo(savedMoves.removeFirst());
+           }
+       }
+
+    }
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
