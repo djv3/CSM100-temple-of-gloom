@@ -6,6 +6,12 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Logger;
 
+import game.EscapeState;
+import game.ExplorationState;
+import game.Node;
+import game.NodeStatus;
+
+import java.util.Collection;
 
 public class Explorer {
 
@@ -39,89 +45,6 @@ public class Explorer {
      *
      * @param state the information available at the current state
      */
-    public void explore(ExplorationState state) throws IOException {
-        //TODO : Explore the cavern and find the orb
-
-        // add logging
-        //Logger logger = LogHelper.getLogger("Explorer");
-
-        long entreLocation = state.getCurrentLocation();
-        int distanceToTarget = state.getDistanceToTarget();
-        Collection<NodeStatus> neighbours = state.getNeighbours();
-
-        NodeStatus current = new NodeStatus(entreLocation,distanceToTarget);
-        Stack<NodeStatus> nodeStack = new Stack<>();
-        List<NodeStatus> visitedNodes = new ArrayList<>();
-        List<NodeStatus> trackNodes = new ArrayList<>();
-        visitedNodes.add(current);
-        nodeStack.push(current);
-
-        // TODO split into two features: dfs algorithm and comeback?
-        while (true){
-            current = nodeStack.pop();
-
-            // dfs search algorithm
-            if(neighbours.contains(current) || entreLocation == current.nodeID()){
-
-                if(current.nodeID() != entreLocation){
-                    state.moveTo(current.nodeID());
-                    trackNodes.add(current);
-                    neighbours = state.getNeighbours();
-
-                    if(current.distanceToTarget() == 0)
-                        break;
-
-                    if(!visitedNodes.contains(current))
-                        visitedNodes.add(current);
-
-                }
-                for (NodeStatus neighbour : neighbours) {
-                    if (!visitedNodes.contains(neighbour))
-                        nodeStack.push(neighbour);
-                }
-            }
-
-            // comeback feature in case stack is empty and hero has to go back to the nearest fork with tiles he´s never been
-            if(nodeStack.isEmpty()){
-
-                boolean stackEmpty = true;
-
-                // come back to the visited nodes step by step until he´s reached the fork and can push new tiles to a stack
-                for (int i = trackNodes.size() - 2; i>=0;i--){
-
-                    // check if the hero´s come back to the entre
-                    if(trackNodes.get(i).nodeID() == entreLocation){
-
-                        for (NodeStatus visitedN: trackNodes){
-                            state.moveTo(visitedN.nodeID());
-                            neighbours = state.getNeighbours();
-                            for(NodeStatus nodeN:neighbours){
-                                if(!visitedNodes.contains(nodeN)){
-                                    nodeStack.push(nodeN);
-                                    stackEmpty = false;
-                                    break;
-                                }
-                            }
-                            if (!stackEmpty)
-                                break;
-                        }
-                    } else if (neighbours.contains(trackNodes.get(i))) {
-                        state.moveTo(trackNodes.get(i).nodeID());
-                        neighbours = state.getNeighbours();
-                        for (NodeStatus node:neighbours) {
-                            if(!visitedNodes.contains(node)){
-                                nodeStack.add(node);
-                                stackEmpty = false;
-                                break;
-                            }
-                        }
-                    }
-                    if (!stackEmpty)
-                        break;
-                }
-            }
-        }
-    }
 
 
     /**
