@@ -1,7 +1,17 @@
 package student;
 
+import game.*;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Logger;
+
 import game.EscapeState;
 import game.ExplorationState;
+import game.Node;
+import game.NodeStatus;
+
+import java.util.Collection;
 
 public class Explorer {
 
@@ -35,9 +45,35 @@ public class Explorer {
      *
      * @param state the information available at the current state
      */
+
     public void explore(ExplorationState state) {
-        //TODO : Explore the cavern and find the orb
+        if (state.getDistanceToTarget() == 0) {
+            return;
+        }
+        //previous node
+        ArrayDeque<Long> savedMoves = new ArrayDeque<>();
+        ArrayDeque<Long> visitedPath = new ArrayDeque<>();
+
+       while (state.getDistanceToTarget() > 0) {
+           // push current location onto path taken
+           visitedPath.push(state.getCurrentLocation());
+           // find all neighbors and order with the neighbor closest to the target first
+           List<Long> neighbors = state.getNeighbours().stream().filter(neighbor -> !visitedPath.contains(neighbor.nodeID()))
+                   .sorted(Comparator.comparing(NodeStatus::distanceToTarget))
+                   .map(NodeStatus::nodeID).toList();
+           if (!neighbors.isEmpty()) {
+               state.moveTo(neighbors.get(0));
+               // add the first neighbor to the saved moves in case we need to visit it again
+               savedMoves.addFirst(state.getCurrentLocation());
+           }else{
+               // no more neighbors, backtrack to the last available neighbor
+               savedMoves.removeFirst();
+               state.moveTo(savedMoves.peekFirst());
+           }
+       }
+
     }
+
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
@@ -63,6 +99,93 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void escape(EscapeState state) {
-        //TODO: Escape from the cavern before time runs out
+        LinkedList<Node> escapeRoute = djikstra(state);
+
+        while (escapeRoute.size() > 0) {
+            state.moveTo(escapeRoute.removeLast());
+            if (state.getCurrentNode().getTile().getGold() > 0) {
+                state.pickUpGold();
+            }
+        }
+    }
+
+    public static LinkedList<Node> djikstra(EscapeState _escapeState) {
+        // 2 maps, one for nodes that have been visited and one for nodes that haven't
+        HashMap<Node, Integer> unvisitedNodes = new HashMap<>();
+        HashMap<Node, Integer> visitedNodes = new HashMap<>();
+
+        // Store start and finish nodes as we'll use these throughout
+        Node startNode = _escapeState.getCurrentNode();
+        Node finishNode = _escapeState.getExit();
+
+        // Store all nodes in the first map
+        for (Node n : _escapeState.getVertices()) {
+            unvisitedNodes.put(n, Integer.MAX_VALUE);
+        }
+        // Special case for the starting node, as we know the distance is 0
+        unvisitedNodes.put(startNode, 0);
+
+        // Main algorithm loop
+        boolean pathFound = false;
+        while (!pathFound) {
+            // Find a random non-visited node with the lowest tentative distance ('lowest node')
+            Map.Entry<Node, Integer> minEntry = null;
+            for (Map.Entry<Node, Integer> entry : unvisitedNodes.entrySet()) {
+                if (minEntry == null || minEntry.getValue() > entry.getValue()) {
+                    minEntry = entry;
+                }
+            }
+
+            // Loop through lowest node's neighbours and update their tentative distances
+            for (Node n : minEntry.getKey().getNeighbours()) {
+                if (unvisitedNodes.containsKey(n)) {
+                    int newDistance = minEntry.getValue() + minEntry.getKey().getEdge(n).length;
+                    if (unvisitedNodes.get(n) > newDistance) {
+                        unvisitedNodes.put(n, newDistance);
+                    }
+                }
+                // If exit is one of the neighbours, then a path has been found so exit loop
+                if (n.equals(finishNode)) {
+                    pathFound = true;
+                }
+            }
+
+            // Mark lowest node as visited
+            visitedNodes.put(minEntry.getKey(), minEntry.getValue());
+            unvisitedNodes.remove(minEntry.getKey());
+        }
+
+        // Create escape path from finish to start
+
+        // LinkedList which will store the shortest escapePath
+        LinkedList<Node> escapePath = new LinkedList<>();
+        Node currentNode = finishNode;
+
+        boolean startFound = false;
+        while (!startFound) {
+            // Get neighbour with lowest distance unless it's the starting node, in which case finish
+            Node lowestNeighbour = null;
+            int lowestDistance = Integer.MAX_VALUE;
+            for (Node n : currentNode.getNeighbours()) {
+                if (visitedNodes.containsKey(n)) {
+                    if (visitedNodes.get(n) < lowestDistance) {
+                        lowestDistance = visitedNodes.get(n);
+                        lowestNeighbour = n;
+                    }
+                }
+            }
+
+            // Add node to list
+            escapePath.add(currentNode);
+
+            if (lowestNeighbour.equals(startNode)) {
+                startFound = true;
+            } else {
+                visitedNodes.remove(lowestNeighbour);
+                currentNode = lowestNeighbour;
+            }
+        }
+
+        return escapePath;
     }
 }
