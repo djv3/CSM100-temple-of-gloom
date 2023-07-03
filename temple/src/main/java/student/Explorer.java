@@ -137,9 +137,9 @@ public class Explorer {
             }
 
             // Loop through lowest node's neighbours and update their tentative distances
-            int newDistance = minEntry.getValue() + 1;
             for (Node n : minEntry.getKey().getNeighbours()) {
                 if (unvisitedNodes.containsKey(n)) {
+                    int newDistance = minEntry.getValue() + minEntry.getKey().getEdge(n).length;
                     if (unvisitedNodes.get(n) > newDistance) {
                         unvisitedNodes.put(n, newDistance);
                     }
