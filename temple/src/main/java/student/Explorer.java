@@ -200,8 +200,9 @@ public class Explorer {
      */
     public void escape(EscapeState state) {
         // We can use different heuristics to greedily capture as much gold as possible!
-        Manhattan m = new Manhattan();
-        ArrayList<Node> path = aStar(state, m);
+//        Manhattan m = new Manhattan();
+        GreedyHeuristic g = new GreedyHeuristic();
+        ArrayList<Node> path = aStar(state, g);
         System.out.println("Current node is: " + state.getCurrentNode());
         System.out.println("Exit node is: " + state.getExit());
         System.out.println("Path is: " + path);
