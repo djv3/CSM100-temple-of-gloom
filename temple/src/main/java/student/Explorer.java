@@ -156,7 +156,6 @@ public class Explorer {
         ArrayList<Node> path = aStar(state, g);
         path.remove(0);
         for (Node n : path) {
-            System.out.println("Moving from " + state.getCurrentNode() + " to " + n);
             state.moveTo(n);
             if (state.getCurrentNode().getTile().getGold() > 0) {
                 state.pickUpGold();
