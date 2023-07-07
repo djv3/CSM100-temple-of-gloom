@@ -58,7 +58,6 @@ public class Explorer {
             open.remove(currentNode);
             closed.put(currentNode, currentG);
             }
-
         return path;
         }
 
@@ -199,15 +198,8 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void escape(EscapeState state) {
-        // We can use different heuristics to greedily capture as much gold as possible!
-//        Manhattan m = new Manhattan();
         GreedyHeuristic g = new GreedyHeuristic();
         ArrayList<Node> path = aStar(state, g);
-        System.out.println("Current node is: " + state.getCurrentNode());
-        System.out.println("Exit node is: " + state.getExit());
-        System.out.println("Path is: " + path);
-        System.out.println("Path length is: " + path.size());
-        System.out.println("Time remaining is: " + state.getTimeRemaining());
         path.remove(0);
         for (Node n : path) {
             System.out.println("Moving from " + state.getCurrentNode() + " to " + n);
@@ -216,27 +208,5 @@ public class Explorer {
                 state.pickUpGold();
             }
         }
-
-//        Iterator<Node> iter = path.iterator();
-//
-//        while (iter.hasNext()) {
-//            Node first = iter.next(); // just cycling past it, so we don't attempt to move to the node we're already on.
-//            if (!iter.hasNext()) {
-//                return;
-//            }
-//            Node n = iter.next();
-//            System.out.println("Moving from " + state.getCurrentNode() + " to " + n);
-//            state.moveTo(n);
-//            if (state.getCurrentNode().getTile().getGold() > 0) {
-//                state.pickUpGold();
-//            }
-//            ArrayList<Node> shortest = aStar(state, m);
-//            ArrayList<Node> greedy = aStar(state, m);
-//            if (shortest.size() * 1.1 <= state.getTimeRemaining()) { // added a 10% buffer to the shortest path for safety
-//                iter = shortest.iterator();
-//            } else {
-//                iter = greedy.iterator();
-//            }
-//        }
     }
 }
