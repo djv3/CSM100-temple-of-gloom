@@ -53,7 +53,7 @@ class HeuristicTest {
     @DisplayName("Test Greedy heuristic distance on randomised escape cavern layouts")
     void greedy() {
         int expectedValue = Math.abs(currentColumn - exitColumn) + Math.abs(currentRow - exitRow) + Cavern.MAX_GOLD_VALUE - currentNode.getTile().getGold();
-        int actualValue = new GreedyHeuristic().estimate(currentNode, exitNode);
+        int actualValue = new Greedy().estimate(currentNode, exitNode);
 
         assertEquals(expectedValue, actualValue);
     }

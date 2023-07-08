@@ -3,7 +3,7 @@ package student;
 import game.Cavern;
 import game.Node;
 
-public class GreedyHeuristic extends Heuristic {
+public class Greedy extends Heuristic {
     @Override
     public int estimate(Node node, Node exitNode) {
         // calculate manhattan distance between current node and exit node
