@@ -95,9 +95,7 @@ public class Explorer {
      */
     public void escape(EscapeState state) {
         Dijkstra dijkstra = new Dijkstra(state);
-        //ArrayList<Node> escapeRoute = dijkstra.shortestPath(state.getCurrentNode(), state.getExit());
-        //ArrayList<Node> escapeRoute = dijkstra.shortestPathWithDetours(state.getCurrentNode(), state.getExit());
-        ArrayList<Node> escapeRoute = dijkstra.shortestPathWithWandering(state.getCurrentNode(), state.getExit());
+        ArrayList<Node> escapeRoute = new Dijkstra(state).bestPath(state.getCurrentNode(), state.getExit());
 
         while (escapeRoute.size() > 0) {
             state.moveTo(escapeRoute.remove(0));
