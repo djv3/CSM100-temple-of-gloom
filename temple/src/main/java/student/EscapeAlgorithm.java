@@ -3,12 +3,12 @@ package student;
 import game.EscapeState;
 import game.Node;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public abstract class EscapeAlgorithm extends Algorithm {
     EscapeState escapeState;
 
-    public abstract ArrayList<Node> bestPath(Node _startNode, Node _endNode);
+    public abstract List<Node> bestPath(Node _startNode, Node _endNode);
 
     public int totalGoldOnMap() {
         int totalGold = 0;
@@ -20,7 +20,7 @@ public abstract class EscapeAlgorithm extends Algorithm {
         return totalGold;
     }
 
-    public int totalGoldOnPath(ArrayList<Node> _path) {
+    public int totalGoldOnPath(List<Node> _path) {
         int totalGold = 0;
 
         for (Node n : _path) {
@@ -30,7 +30,7 @@ public abstract class EscapeAlgorithm extends Algorithm {
         return totalGold;
     }
 
-    public static int timeTakenToTraversePath(Node _startingPosition, ArrayList<Node> _path) {
+    public static int timeTakenToTraversePath(Node _startingPosition, List<Node> _path) {
         int timeTaken = 0;
 
         timeTaken += _startingPosition.getEdge(_path.get(0)).length;

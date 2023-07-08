@@ -94,8 +94,7 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void escape(EscapeState state) {
-        Dijkstra dijkstra = new Dijkstra(state);
-        ArrayList<Node> escapeRoute = new Dijkstra(state).bestPath(state.getCurrentNode(), state.getExit());
+        List<Node> escapeRoute = new Dijkstra(state).bestPath(state.getCurrentNode(), state.getExit());
 
         while (escapeRoute.size() > 0) {
             state.moveTo(escapeRoute.remove(0));

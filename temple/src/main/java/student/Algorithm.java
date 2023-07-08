@@ -2,8 +2,8 @@ package student;
 
 import game.Node;
 
-import java.util.ArrayList;
+import java.util.List;
 
 public abstract class Algorithm {
-    public abstract ArrayList<Node> shortestPath(Node _startNode, Node _endNode);
+    public abstract List<Node> shortestPath(Node _startNode, Node _endNode);
 }

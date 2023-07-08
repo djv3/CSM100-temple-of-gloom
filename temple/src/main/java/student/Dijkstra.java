@@ -10,9 +10,9 @@ public class Dijkstra extends EscapeAlgorithm {
         escapeState = _escapeState;
     }
 
-    public ArrayList<Node> bestPath(Node _startNode, Node _endNode) {
-        ArrayList<Node> detourAlgorithm = pathWithDetours(_startNode, _endNode);
-        ArrayList<Node> wanderingAlgorithm = wanderingPath(_startNode, _endNode);
+    public List<Node> bestPath(Node _startNode, Node _endNode) {
+        List<Node> detourAlgorithm = pathWithDetours(_startNode, _endNode);
+        List<Node> wanderingAlgorithm = wanderingPath(_startNode, _endNode);
 
         if (totalGoldOnPath(detourAlgorithm) > totalGoldOnPath(wanderingAlgorithm)) {
             return detourAlgorithm;
@@ -21,7 +21,7 @@ public class Dijkstra extends EscapeAlgorithm {
         }
     }
 
-    public ArrayList<Node> shortestPath(Node _startNode, Node _endNode) {
+    public List<Node> shortestPath(Node _startNode, Node _endNode) {
         // 2 maps, one for nodes that have been visited and one for nodes that haven't
         HashMap<Node, Integer> unvisitedNodes = new HashMap<>();
         HashMap<Node, Integer> visitedNodes = new HashMap<>();
@@ -98,12 +98,11 @@ public class Dijkstra extends EscapeAlgorithm {
         return shortestPath;
     }
 
-    public ArrayList<Node> pathWithDetours(Node _startNode, Node _endNode) {
-        ArrayList<Node> path = shortestPath(_startNode, _endNode);
+    public List<Node> pathWithDetours(Node _startNode, Node _endNode) {
+        List<Node> path = shortestPath(_startNode, _endNode);
         int totalTime = escapeState.getTimeRemaining();
         int timeRemaining = totalTime - Dijkstra.timeTakenToTraversePath(_startNode, path);
 
-        boolean timeUp = false;
         boolean detoursFound;
 
         do {
@@ -134,30 +133,26 @@ public class Dijkstra extends EscapeAlgorithm {
                         }
                     }
                 }
-
-                if (timeUp) {
-                    break;
-                }
             }
         } while (detoursFound);
 
         return path;
     }
 
-    public ArrayList<Node> wanderingPath(Node _startNode, Node _endNode) {
+    public List<Node> wanderingPath(Node _startNode, Node _endNode) {
         // It's possible that the shortest path collects all gold anyway, so no wandering is required
-        ArrayList<Node> path = shortestPath(_startNode, _endNode);
+        List<Node> path = shortestPath(_startNode, _endNode);
         if (totalGoldOnPath(path) == totalGoldOnMap()) {
             return path;
         }
 
-        ArrayList<Node> wanderingPath = new ArrayList<>();
+        List<Node> wanderingPath = new ArrayList<>();
 
         boolean needToGetOut = false;
 
         while (!needToGetOut) {
             // Find the path to the nearest gold
-            ArrayList<Node> pathFromStartToGold;
+            List<Node> pathFromStartToGold;
             if (wanderingPath.size() == 0) {
                 pathFromStartToGold = findPathToClosestNodeWithGold(_startNode, wanderingPath);
             } else {
@@ -165,7 +160,7 @@ public class Dijkstra extends EscapeAlgorithm {
             }
 
             // Find the path from the nearest gold to the end
-            ArrayList<Node> pathFromGoldToEnd = shortestPath(pathFromStartToGold.get(pathFromStartToGold.size() - 1), _endNode);
+            List<Node> pathFromGoldToEnd = shortestPath(pathFromStartToGold.get(pathFromStartToGold.size() - 1), _endNode);
 
             // If there's gold left...
             if (totalGoldOnPath(wanderingPath) < totalGoldOnMap()
@@ -183,7 +178,7 @@ public class Dijkstra extends EscapeAlgorithm {
         return wanderingPath;
     }
 
-    public ArrayList<Node> findPathToClosestNodeWithGold(Node _startingNode, ArrayList<Node> _visitedNodes) {
+    public List<Node> findPathToClosestNodeWithGold(Node _startingNode, List<Node> _visitedNodes) {
         Set<Node> neighboursToCheck = _startingNode.getNeighbours();
         Node target = null;
 
