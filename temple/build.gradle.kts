@@ -15,7 +15,6 @@ plugins {
     id("com.diffplug.spotless") version "6.19.0"
 }
 
-
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
@@ -24,7 +23,14 @@ repositories {
 dependencies {
     // This dependency is used by the application.
     implementation("com.google.guava:guava:31.1-jre")
+    implementation("junit:junit:4.13.1")
+    implementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
+    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     errorprone("com.google.errorprone:error_prone_core:latest.release")
+
+    testImplementation(platform("org.junit:junit-bom:5.9.3"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -37,4 +43,11 @@ java {
 application {
     // Define the main class for the application.
     mainClass.set(project.findProperty("chooseMain").toString())
+}
+
+tasks.test {
+    useJUnitPlatform()
+    testLogging {
+        events("passed", "skipped", "failed")
+    }
 }
