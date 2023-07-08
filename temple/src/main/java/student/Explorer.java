@@ -100,6 +100,7 @@ public class Explorer {
         }
     }
 
+    //TODO refactor ???
     private List<NodeA> getNeighborsA(Collection<NodeStatus> neighbours, NodeA current){
         List<NodeA> neighboursA = new ArrayList<>();
         for (NodeStatus n:neighbours) {
@@ -109,7 +110,8 @@ public class Explorer {
         }
         return  neighboursA;
     }
-
+    
+    //TODO refactor ???
     private boolean is_node_in_list(NodeA m, PriorityQueue<NodeA> list){
         for (NodeA nA: list) {
             if(m.nodeStatus().nodeID() == nA.nodeStatus().nodeID())
