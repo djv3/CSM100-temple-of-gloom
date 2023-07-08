@@ -1,10 +1,7 @@
 package student;
 
 import game.*;
-
-import java.io.IOException;
 import java.util.*;
-import java.util.logging.Logger;
 
 import game.EscapeState;
 import game.ExplorationState;
@@ -45,35 +42,81 @@ public class Explorer {
      *
      * @param state the information available at the current state
      */
+    public void explore(ExplorationState state)  {
 
-    public void explore(ExplorationState state) {
-        if (state.getDistanceToTarget() == 0) {
-            return;
+        NodeStatus entrePoint = new NodeStatus(state.getCurrentLocation(),state.getDistanceToTarget());
+        NodeA start = new NodeA( entrePoint, state.getDistanceToTarget(), 0, null);
+
+        PriorityQueue<NodeA> openSet = new PriorityQueue<>();
+        openSet.add(start);
+        PriorityQueue<NodeA> closedSet = new PriorityQueue<>();
+
+        while (true){
+            // A* - algorithm
+            NodeA current = openSet.poll();
+            openSet.clear();
+            closedSet.add(current);
+
+            if(current.nodeStatus().nodeID() != entrePoint.nodeID()){
+                state.moveTo(current.nodeStatus().nodeID());
+            }
+
+            // reached the ord
+            if(current.nodeStatus().distanceToTarget() == 0)
+                break;
+
+            List<NodeA> neighboursA = getNeighborsA(state.getNeighbours(),current);
+
+            for (NodeA m:neighboursA){
+                if(!is_node_in_list(m, openSet) && !is_node_in_list(m, closedSet)){
+                    openSet.add(m);
+                }else {
+                    int costPathToNode = current.g() + 1;
+                    if(costPathToNode < m.g() && is_node_in_list(m, closedSet)){
+                            closedSet.remove(m);
+                            openSet.add(m);
+                    }
+                }
+            }
+
+            NodeA nextMove = openSet.peek();
+
+            // Trace back in case openSet is empty
+            while (nextMove == null){
+                NodeA backNode = current.parent();
+                state.moveTo(backNode.nodeStatus().nodeID());
+
+                List<NodeA> neighboursBackNode = getNeighborsA(state.getNeighbours(),backNode);
+
+                for (NodeA m:neighboursBackNode) {
+                    if(!is_node_in_list(m, closedSet)){
+                        openSet.add(m);
+                    }
+                }
+
+                nextMove = openSet.peek();
+                current = backNode;
+            }
         }
-        //previous node
-        ArrayDeque<Long> savedMoves = new ArrayDeque<>();
-        ArrayDeque<Long> visitedPath = new ArrayDeque<>();
-
-       while (state.getDistanceToTarget() > 0) {
-           // push current location onto path taken
-           visitedPath.push(state.getCurrentLocation());
-           // find all neighbors and order with the neighbor closest to the target first
-           List<Long> neighbors = state.getNeighbours().stream().filter(neighbor -> !visitedPath.contains(neighbor.nodeID()))
-                   .sorted(Comparator.comparing(NodeStatus::distanceToTarget))
-                   .map(NodeStatus::nodeID).toList();
-           if (!neighbors.isEmpty()) {
-               state.moveTo(neighbors.get(0));
-               // add the first neighbor to the saved moves in case we need to visit it again
-               savedMoves.addFirst(state.getCurrentLocation());
-           }else{
-               // no more neighbors, backtrack to the last available neighbor
-               savedMoves.removeFirst();
-               state.moveTo(savedMoves.peekFirst());
-           }
-       }
-
     }
 
+    private List<NodeA> getNeighborsA(Collection<NodeStatus> neighbours, NodeA current){
+        List<NodeA> neighboursA = new ArrayList<>();
+        for (NodeStatus n:neighbours) {
+            int g = current.g() + 1;
+            int f = g + n.distanceToTarget();
+            neighboursA.add(new NodeA(n, f, g, current));
+        }
+        return  neighboursA;
+    }
+
+    private boolean is_node_in_list(NodeA m, PriorityQueue<NodeA> list){
+        for (NodeA nA: list) {
+            if(m.nodeStatus().nodeID() == nA.nodeStatus().nodeID())
+                return true;
+        }
+        return false;
+    }
 
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
