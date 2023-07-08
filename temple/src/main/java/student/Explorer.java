@@ -53,11 +53,11 @@ public class Explorer {
            // push current location onto path taken
            visitedPath.push(state.getCurrentLocation());
            // find all neighbors and order with the neighbor closest to the target first
-           List<Long> neighbors = state.getNeighbours().stream().filter(neighbor -> !visitedPath.contains(neighbor.nodeID()))
-                   .sorted(Comparator.comparing(NodeStatus::distanceToTarget))
-                   .map(NodeStatus::nodeID).toList();
+           List<NodeStatus> neighbors = state.getNeighbours().stream().filter(neighbor -> !visitedPath.contains(neighbor.nodeID()))
+                   .sorted(Comparator.comparing(NodeStatus::nodeID).reversed().thenComparing(NodeStatus::compareTo)).toList();
+                  // .map(NodeStatus::nodeID).toList();
            if (!neighbors.isEmpty()) {
-               state.moveTo(neighbors.get(0));
+               state.moveTo(neighbors.get(0).nodeID());
                // add the first neighbor to the saved moves in case we need to visit it again
                savedMoves.addFirst(state.getCurrentLocation());
            }else{
