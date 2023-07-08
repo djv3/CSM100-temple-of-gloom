@@ -1,64 +1,19 @@
 package student;
 
+import game.*;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.logging.Logger;
+
 import game.EscapeState;
 import game.ExplorationState;
 import game.Node;
 import game.NodeStatus;
 
-import java.util.*;
+import java.util.Collection;
 
 public class Explorer {
-
-    public static List<Node> aStar(Node start, Node exit, Heuristic heuristic) {
-        // a star formula for a node's weight is f = g + h
-        // g is the distance from the start node to the current node
-        // h is the heuristic - the estimated distance from the current node to the exit node
-        HashMap<Node, Integer> open = new HashMap<>(); // k, v of node, g (distance from start)
-        HashMap<Node, Integer> closed = new HashMap<>();
-        HashMap<Node, Node> parent = new HashMap<>(); // k, v of node, parent node
-        ArrayList<Node> path = new ArrayList<>();
-        open.put(start, 0);
-        while (!open.isEmpty()) {
-            Map.Entry<Node, Integer> current = open.entrySet()
-                    .stream()
-                    .min(Comparator.comparingInt(e -> e.getValue() + heuristic.estimate(e.getKey(), exit)))
-                    .orElseThrow();
-
-            Node currentNode = current.getKey();
-            int currentG = current.getValue();
-
-            Set<Node> neighbours = currentNode.getNeighbours();
-
-            for (Node neighbour : neighbours) {
-                if (neighbour.equals(exit)) {
-                    Node node = currentNode;
-                    while (node != null) {
-                        path.add(0, node); // walk backwards from exit to start
-                        node = parent.get(node);
-                    }
-                    path.add(exit);
-                    return path;
-                }
-                if (closed.containsKey(neighbour)) {
-                    continue;
-                }
-                int neighbourG = currentG + currentNode.getEdge(neighbour).length;
-                if (open.containsKey(neighbour)) {
-                    if (neighbourG < open.get(neighbour)) {
-                        open.put(neighbour, neighbourG);
-                        parent.put(neighbour, currentNode);
-                    }
-                } else {
-                    open.put(neighbour, neighbourG);
-                    parent.put(neighbour, currentNode);
-                }
-            }
-
-            open.remove(currentNode);
-            closed.put(currentNode, currentG);
-        }
-        return path;
-    }
 
     /**
      * Explore the cavern, trying to find the orb in as few steps as possible.
@@ -99,23 +54,23 @@ public class Explorer {
         ArrayDeque<Long> savedMoves = new ArrayDeque<>();
         ArrayDeque<Long> visitedPath = new ArrayDeque<>();
 
-        while (state.getDistanceToTarget() > 0) {
-            // push current location onto path taken
-            visitedPath.push(state.getCurrentLocation());
-            // find all neighbors and order with the neighbor closest to the target first
-            List<Long> neighbors = state.getNeighbours().stream().filter(neighbor -> !visitedPath.contains(neighbor.nodeID()))
-                    .sorted(Comparator.comparing(NodeStatus::distanceToTarget))
-                    .map(NodeStatus::nodeID).toList();
-            if (!neighbors.isEmpty()) {
-                state.moveTo(neighbors.get(0));
-                // add the first neighbor to the saved moves in case we need to visit it again
-                savedMoves.addFirst(state.getCurrentLocation());
-            } else {
-                // no more neighbors, backtrack to the last available neighbor
-                savedMoves.removeFirst();
-                state.moveTo(savedMoves.peekFirst());
-            }
-        }
+       while (state.getDistanceToTarget() > 0) {
+           // push current location onto path taken
+           visitedPath.push(state.getCurrentLocation());
+           // find all neighbors and order with the neighbor closest to the target first
+           List<Long> neighbors = state.getNeighbours().stream().filter(neighbor -> !visitedPath.contains(neighbor.nodeID()))
+                   .sorted(Comparator.comparing(NodeStatus::distanceToTarget))
+                   .map(NodeStatus::nodeID).toList();
+           if (!neighbors.isEmpty()) {
+               state.moveTo(neighbors.get(0));
+               // add the first neighbor to the saved moves in case we need to visit it again
+               savedMoves.addFirst(state.getCurrentLocation());
+           }else{
+               // no more neighbors, backtrack to the last available neighbor
+               savedMoves.removeFirst();
+               state.moveTo(savedMoves.peekFirst());
+           }
+       }
 
     }
 
@@ -144,74 +99,93 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void escape(EscapeState state) {
-        Greedy g = new Greedy();
-        Chebyshev c = new Chebyshev();
-//        Node start = state.getCurrentNode();
-        Node exit = state.getExit();
-        TreeSet<Node> topNodesTree = new TreeSet<>(new Comparator<Node>() {
-            @Override
-            public int compare(Node o1, Node o2) {
-                return o1.getTile().getGold() - o2.getTile().getGold();
-            }
-        }); // I took the idea for this from this stack overflow article: https://stackoverflow.com/questions/29699103/treeset-constructor-with-comparator-parameter
+        LinkedList<Node> escapeRoute = djikstra(state);
 
-        state.getVertices().forEach(node -> {
-            if (topNodesTree.size() < 15) { // I decided on the top 10 nodes to begin with
-                topNodesTree.add(node);
-            } else {
-                if (node.getTile().getGold() > topNodesTree.first().getTile().getGold()) {
-                    topNodesTree.pollFirst();
-                    topNodesTree.add(node);
-                }
-            }
-        });
-
-        // sort the top nodes by distance to the start node using the Chebyshev distance
-        List<Node> topNodes = topNodesTree.stream().sorted(Comparator.comparing(node -> c.estimate(node, state.getCurrentNode()))).toList();
-
-        // create a path that visits all nodes in topNodes before exiting
-        List<Node> path = new ArrayList<>();
-        ListIterator<Node> iterator = topNodes.listIterator();
-        path.add(state.getCurrentNode());
-        // we then check that from current node to the next node in topNodes, then to the exit is less than time remaining
-        // if it is, we add the next node in topNodes to the path and repeat, otherwise we go straight to the exit
-        while (iterator.hasNext()) {
-            Node nextNode = iterator.next();
-            Node lastNode = path.get(path.size() - 1);
-            if (getPathLength(aStar(lastNode, nextNode, g)) + getPathLength(aStar(nextNode, exit, g)) + getPathLength(path) < state.getTimeRemaining()) {
-                var newPath = aStar(lastNode, nextNode, g);
-                path.remove(lastNode);
-                path.addAll(newPath);
-            } else {
-                var newPath = aStar(lastNode, exit, g);
-                path.remove(lastNode);
-                path.addAll(newPath);
-                break;
-            }
-        }
-        Node pathLast = path.get(path.size() - 1);
-        if (!pathLast.equals(exit)) {
-            path.remove(pathLast);
-            path.addAll(aStar(pathLast, exit, g));
-        }
-        path.remove(0); // remove the first node as it is the current node
-//        System.out.println(getPathLength(path));
-//        System.out.println(state.getTimeRemaining());
-//        System.out.println("Exit: " + exit);
-//        System.out.println("Last in path: " + path.get(path.size() - 1));
-        for (Node n : path) {
-            state.moveTo(n);
+        while (escapeRoute.size() > 0) {
+            state.moveTo(escapeRoute.removeLast());
             if (state.getCurrentNode().getTile().getGold() > 0) {
                 state.pickUpGold();
             }
         }
     }
 
-    public int getPathLength(List<Node> path) {
-        int length = 0;
-        for (int i = 0; i < path.size() - 1; i++) {
-            length += path.get(i).getEdge(path.get(i + 1)).length();
+    public static LinkedList<Node> djikstra(EscapeState _escapeState) {
+        // 2 maps, one for nodes that have been visited and one for nodes that haven't
+        HashMap<Node, Integer> unvisitedNodes = new HashMap<>();
+        HashMap<Node, Integer> visitedNodes = new HashMap<>();
+
+        // Store start and finish nodes as we'll use these throughout
+        Node startNode = _escapeState.getCurrentNode();
+        Node finishNode = _escapeState.getExit();
+
+        // Store all nodes in the first map
+        for (Node n : _escapeState.getVertices()) {
+            unvisitedNodes.put(n, Integer.MAX_VALUE);
         }
-        return length;
+        // Special case for the starting node, as we know the distance is 0
+        unvisitedNodes.put(startNode, 0);
+
+        // Main algorithm loop
+        boolean pathFound = false;
+        while (!pathFound) {
+            // Find a random non-visited node with the lowest tentative distance ('lowest node')
+            Map.Entry<Node, Integer> minEntry = null;
+            for (Map.Entry<Node, Integer> entry : unvisitedNodes.entrySet()) {
+                if (minEntry == null || minEntry.getValue() > entry.getValue()) {
+                    minEntry = entry;
+                }
+            }
+
+            // Loop through lowest node's neighbours and update their tentative distances
+            for (Node n : minEntry.getKey().getNeighbours()) {
+                if (unvisitedNodes.containsKey(n)) {
+                    int newDistance = minEntry.getValue() + minEntry.getKey().getEdge(n).length;
+                    if (unvisitedNodes.get(n) > newDistance) {
+                        unvisitedNodes.put(n, newDistance);
+                    }
+                }
+                // If exit is one of the neighbours, then a path has been found so exit loop
+                if (n.equals(finishNode)) {
+                    pathFound = true;
+                }
+            }
+
+            // Mark lowest node as visited
+            visitedNodes.put(minEntry.getKey(), minEntry.getValue());
+            unvisitedNodes.remove(minEntry.getKey());
+        }
+
+        // Create escape path from finish to start
+
+        // LinkedList which will store the shortest escapePath
+        LinkedList<Node> escapePath = new LinkedList<>();
+        Node currentNode = finishNode;
+
+        boolean startFound = false;
+        while (!startFound) {
+            // Get neighbour with lowest distance unless it's the starting node, in which case finish
+            Node lowestNeighbour = null;
+            int lowestDistance = Integer.MAX_VALUE;
+            for (Node n : currentNode.getNeighbours()) {
+                if (visitedNodes.containsKey(n)) {
+                    if (visitedNodes.get(n) < lowestDistance) {
+                        lowestDistance = visitedNodes.get(n);
+                        lowestNeighbour = n;
+                    }
+                }
+            }
+
+            // Add node to list
+            escapePath.add(currentNode);
+
+            if (lowestNeighbour.equals(startNode)) {
+                startFound = true;
+            } else {
+                visitedNodes.remove(lowestNeighbour);
+                currentNode = lowestNeighbour;
+            }
+        }
+
+        return escapePath;
     }
 }
