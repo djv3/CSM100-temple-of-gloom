@@ -44,7 +44,7 @@ public abstract class EscapeAlgorithm extends Algorithm {
      * @param _path = the collection of Node objects whose gold should be summed
      * @return      = the amount of gold present on the path
      */
-    public int totalGoldOnPath(List<Node> _path) {
+    public static int totalGoldOnPath(List<Node> _path) {
         int totalGold = 0;
 
         for (Node n : _path) {

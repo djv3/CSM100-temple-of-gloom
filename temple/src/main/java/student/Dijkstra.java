@@ -180,23 +180,29 @@ public class Dijkstra extends EscapeAlgorithm {
         boolean needToGetOut = false;
 
         while (!needToGetOut) {
-            // Find the path to the nearest gold
-            List<Node> pathFromStartToGold;
-            if (wanderingPath.size() == 0) {
-                pathFromStartToGold = findPathToClosestNodeWithGold(_startNode, wanderingPath);
-            } else {
-                pathFromStartToGold = findPathToClosestNodeWithGold(wanderingPath.get(wanderingPath.size() - 1), wanderingPath);
-            }
-
-            // Find the path from the nearest gold to the end
-            List<Node> pathFromGoldToEnd = shortestPath(pathFromStartToGold.get(pathFromStartToGold.size() - 1), _endNode);
-
             // If there's gold left...
-            if (totalGoldOnPath(wanderingPath) < totalGoldOnMap()
-                // and there's time to go and get the gold...
-                && (wanderingPath.size() == 0 || timeTakenToTraversePath(_startNode, wanderingPath) + timeTakenToTraversePath(wanderingPath.get(wanderingPath.size() - 1), pathFromStartToGold) + timeTakenToTraversePath(pathFromStartToGold.get(pathFromStartToGold.size() - 1), pathFromGoldToEnd) < timeRemaining)) {
-                // ... go and get it
-                wanderingPath.addAll(pathFromStartToGold);
+            if (totalGoldOnPath(wanderingPath) < totalGoldOnMap()) {
+                // ... find the path to the nearest gold
+
+                List<Node> pathFromStartToGold;
+                if (wanderingPath.size() == 0) {
+                    pathFromStartToGold = findPathToClosestNodeWithGold(_startNode, wanderingPath);
+                } else {
+                    pathFromStartToGold = findPathToClosestNodeWithGold(wanderingPath.get(wanderingPath.size() - 1), wanderingPath);
+                }
+
+                // Find the path from the nearest gold to the end
+                List<Node> pathFromGoldToEnd = shortestPath(pathFromStartToGold.get(pathFromStartToGold.size() - 1), _endNode);
+
+                // If there's time to go and get the gold...
+                if (wanderingPath.size() == 0 || timeTakenToTraversePath(_startNode, wanderingPath) + timeTakenToTraversePath(wanderingPath.get(wanderingPath.size() - 1), pathFromStartToGold) + timeTakenToTraversePath(pathFromStartToGold.get(pathFromStartToGold.size() - 1), pathFromGoldToEnd) < timeRemaining) {
+                    // ... go and get it
+                    wanderingPath.addAll(pathFromStartToGold);
+                } else {
+                    // Get to the exit
+                    wanderingPath.addAll(shortestPath(wanderingPath.get(wanderingPath.size() - 1), _endNode));
+                    needToGetOut = true;
+                }
             } else {
                 // Get to the exit
                 wanderingPath.addAll(shortestPath(wanderingPath.get(wanderingPath.size() - 1), _endNode));
@@ -216,6 +222,9 @@ public class Dijkstra extends EscapeAlgorithm {
      * @return              = a Node object that is the closest to _startingNode that contains gold
      */
     public List<Node> findPathToClosestNodeWithGold(Node _startingNode, List<Node> _visitedNodes) {
+        // If all the gold's already accounted for, stop looking!
+
+
         Set<Node> neighboursToCheck = _startingNode.getNeighbours();
         Node target = null;
 
