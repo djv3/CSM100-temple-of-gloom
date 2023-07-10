@@ -94,8 +94,14 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void escape(EscapeState state) {
-        List<Node> escapeRoute = new Dijkstra(state).bestPath(state.getCurrentNode(), state.getExit());
-
+        Dijkstra dijkstra = new Dijkstra(state);
+        List<Node> escapeRoute = dijkstra.bestPath(state.getCurrentNode(), state.getExit());
+        Astar astar = new Astar(state);
+        List<Node> aStarRoute = astar.bestPath(state.getCurrentNode(), state.getExit());
+        System.out.println("Dijkstra gold on path: " + dijkstra.totalGoldOnPath(escapeRoute));
+        System.out.println("Dijkstra route length: " + Dijkstra.timeTakenToTraversePath(state.getCurrentNode(), escapeRoute));
+        System.out.println("A Star gold on path: " + astar.totalGoldOnPath(aStarRoute));
+        System.out.println("A Star route length: " + Astar.timeTakenToTraversePath(state.getCurrentNode(), aStarRoute));
         while (escapeRoute.size() > 0) {
             state.moveTo(escapeRoute.remove(0));
             if (state.getCurrentNode().getTile().getGold() > 0) {
