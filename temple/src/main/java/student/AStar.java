@@ -71,6 +71,11 @@ public class AStar extends EscapeAlgorithm {
                 break;
             }
         }
+        if (pathLength(path) > timeRemaining) {
+            System.out.println("Escaping!, path length: " + pathLength(path));
+            path = shortestPath(start, exit);
+        }
+
         path.remove(0);
         return path;
     }
