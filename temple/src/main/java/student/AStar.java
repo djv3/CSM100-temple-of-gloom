@@ -7,8 +7,9 @@ import game.Node;
 import java.util.*;
 
 public class AStar extends EscapeAlgorithm {
-    public AStar(EscapeState _escapeState) {
-        escapeState = _escapeState;
+    public AStar(Set<Node> _graph, int _timeRemaining) {
+        graph = _graph;
+        timeRemaining = _timeRemaining;
     }
 
     /**
@@ -21,11 +22,10 @@ public class AStar extends EscapeAlgorithm {
      */
     @Override
     public List<Node> bestPath(Node start, Node exit) {
-        int timeRemaining = escapeState.getTimeRemaining();
         System.out.println("Time remaining: " + timeRemaining);
         TreeSet<Node> nearestNodesWithGold = new TreeSet<>(Comparator.comparingInt(o -> estimate(o, start)));
         TreeSet<Node> nodesWithGold = new TreeSet<>(Comparator.comparingInt(o -> o.getTile().getGold()));
-        escapeState.getVertices().forEach(n -> {
+        graph.forEach(n -> {
             if (n.getTile().getGold() > 0) {
                 nodesWithGold.add(n);
             }

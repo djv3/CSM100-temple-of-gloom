@@ -94,9 +94,11 @@ public class Explorer {
      * @param state the information available at the current state
      */
     public void escape(EscapeState state) {
-        Dijkstra dijkstra = new Dijkstra(state);
+        int timeRemaining = state.getTimeRemaining();
+        Set<Node> vertices = (Set<Node>) state.getVertices();
+        Dijkstra dijkstra = new Dijkstra(vertices, timeRemaining);
         List<Node> escapeRoute = dijkstra.bestPath(state.getCurrentNode(), state.getExit());
-        AStar astar = new AStar(state);
+        AStar astar = new AStar(vertices, timeRemaining);
         List<Node> aStarRoute = astar.bestPath(state.getCurrentNode(), state.getExit());
         System.out.println("Dijkstra gold on path: " + dijkstra.totalGoldOnPath(escapeRoute));
         System.out.println("Dijkstra route length: " + Dijkstra.timeTakenToTraversePath(state.getCurrentNode(), escapeRoute));
