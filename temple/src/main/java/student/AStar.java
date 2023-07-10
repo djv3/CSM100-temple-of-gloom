@@ -1,5 +1,6 @@
 package student;
 
+import game.Cavern;
 import game.EscapeState;
 import game.Node;
 
@@ -15,12 +16,19 @@ public class AStar extends EscapeAlgorithm {
         int timeRemaining = escapeState.getTimeRemaining();
         System.out.println("time remaining: " + timeRemaining);
         TreeSet<Node> nearestNodesWithGold = new TreeSet<>(Comparator.comparingInt(o -> estimate(o, start)));
-
+        TreeSet<Node> topNodesWithGold = new TreeSet<>(Comparator.comparingInt(o -> o.getTile().getGold()));
         escapeState.getVertices().forEach(n -> {
             if (n.getTile().getGold() > 0) {
                 nearestNodesWithGold.add(n);
             }
         });
+
+        //reverse the order of the set so that the node with the most gold is first
+        var prioritySet = (TreeSet<Node>) topNodesWithGold.descendingSet();
+
+        while (nearestNodesWithGold.size() < topNodesWithGold.size()) {
+            nearestNodesWithGold.add(prioritySet.pollFirst());
+        }
 
         List<Node> path = new ArrayList<>();
 
@@ -40,29 +48,29 @@ public class AStar extends EscapeAlgorithm {
                 break;
             }
 
-            Node nearestNodeWithGold = nearestNodesWithGold.pollFirst();
+            Node nextNode = nearestNodesWithGold.pollFirst();
 
-            if (nearestNodeWithGold == null) {
-                System.out.println("There's no more gold. The path length is: " + pathLength);
+            if (nextNode == null) {
                 path.addAll(pathToExit);
                 break;
             }
 
-            List<Node> nearestNodeWithGoldPath = shortestPath(lastNodeInPath, nearestNodeWithGold);
+            List<Node> nearestNodeWithGoldPath = shortestPath(lastNodeInPath, nextNode);
 
             if (nearestNodeWithGoldPath.size() == 0) {
-                System.out.println("The path to the nearest node with gold is of zero length");
                 path.addAll(pathToExit);
                 break;
             }
 
-            Node lastNodeInNewPath = nearestNodeWithGoldPath.get(nearestNodeWithGoldPath.size() - 1);
-            var pathToExitFromNearestNodeWithGold = shortestPath(lastNodeInNewPath, exit);
+            Node lastNodeInNewestPath = nearestNodeWithGoldPath.get(nearestNodeWithGoldPath.size() - 1);
 
-            int totalPathLengths = (pathLength(path) + pathLength(nearestNodeWithGoldPath) + pathLength(pathToExitFromNearestNodeWithGold));
+            if (lastNodeInNewestPath.equals(exit)) {
+                path.addAll(nearestNodeWithGoldPath);
+                break;
+            }
 
-            if (totalPathLengths > timeRemaining) {
-                System.out.println("The total path length is greater than the time remaining");
+
+            if (pathLength(path) + pathLength(nearestNodeWithGoldPath) + pathLength(shortestPath(lastNodeInNewestPath, exit)) + pathLength(pathToExit) > timeRemaining) {
                 path.addAll(pathToExit);
                 break;
             }
@@ -70,7 +78,6 @@ public class AStar extends EscapeAlgorithm {
             path.addAll(nearestNodeWithGoldPath);
 
             pathLength = pathLength(path);
-            System.out.println("path length: " + pathLength);
         }
         path.remove(0);
         return path;
@@ -89,16 +96,12 @@ public class AStar extends EscapeAlgorithm {
         int currentRow = node.getTile().getRow();
         int exitColumn = exit.getTile().getColumn();
         int exitRow = exit.getTile().getRow();
-
-        return Math.max(Math.abs(currentColumn - exitColumn), Math.abs(currentRow - exitRow));
+        int manhattanDistance = Math.abs(currentColumn - exitColumn) + Math.abs(currentRow - exitRow);
+        return manhattanDistance + Cavern.MAX_GOLD_VALUE - node.getTile().getGold();
     }
 
     @Override
     public List<Node> shortestPath(Node start, Node exit) {
-        return getPath(start, exit);
-    }
-
-    public List<Node> getPath(Node start, Node exit) {
         HashMap<Node, Integer> open = new HashMap<>();
         HashMap<Node, Integer> closed = new HashMap<>();
         HashMap<Node, Node> parent = new HashMap<>();
