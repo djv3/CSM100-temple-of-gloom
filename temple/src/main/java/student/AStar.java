@@ -11,6 +11,14 @@ public class AStar extends EscapeAlgorithm {
         escapeState = _escapeState;
     }
 
+    /**
+     * Uses the A* algorithm to build a path to a node, prioritising nodes with gold.
+     * Uses the shortestPath method to find the best path between important nodes.
+     *
+     * @param start the node to start from
+     * @param exit  the node to end at
+     * @return a list of nodes that make up the best path
+     */
     @Override
     public List<Node> bestPath(Node start, Node exit) {
         int timeRemaining = escapeState.getTimeRemaining();
@@ -76,6 +84,11 @@ public class AStar extends EscapeAlgorithm {
         return path;
     }
 
+    /**
+     * Calculates the length of a path.
+     * @param path A list of nodes representing a path to another node.
+     * @return The length of the path.
+     */
     public int pathLength(List<Node> path) {
         int pathLength = 0;
         for (int i = 0; i < path.size() - 1; i++) {
@@ -84,15 +97,30 @@ public class AStar extends EscapeAlgorithm {
         return pathLength;
     }
 
-    public int estimate(Node node, Node exit) {
+    /**
+     * Estimates the distance between a node and another node.
+     * The estimate is the Manhattan distance between the two nodes, weighted by the amount of gold in the current node.
+     *
+     * @param node the current node
+     * @param other the other node
+     * @return the estimated distance between the two nodes
+     */
+    public int estimate(Node node, Node other) {
         int currentColumn = node.getTile().getColumn();
         int currentRow = node.getTile().getRow();
-        int exitColumn = exit.getTile().getColumn();
-        int exitRow = exit.getTile().getRow();
+        int exitColumn = other.getTile().getColumn();
+        int exitRow = other.getTile().getRow();
         int manhattanDistance = Math.abs(currentColumn - exitColumn) + Math.abs(currentRow - exitRow);
         return manhattanDistance + Cavern.MAX_GOLD_VALUE - node.getTile().getGold();
     }
 
+    /**
+     * Finds the shortest path between two nodes using the A* algorithm.
+     *
+     * @param start the start node
+     * @param exit the exit node
+     * @return the shortest path between the two nodes
+     */
     @Override
     public List<Node> shortestPath(Node start, Node exit) {
         HashMap<Node, Integer> open = new HashMap<>();
