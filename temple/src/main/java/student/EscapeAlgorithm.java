@@ -1,16 +1,17 @@
 package student;
 
-import game.EscapeState;
 import game.Node;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * An abstract class representing an algorithm to calculate paths in an escape maze (i.e. with full visibility and
  * gold present on some tiles).
  */
 public abstract class EscapeAlgorithm extends Algorithm {
-    EscapeState escapeState;
+    Set<Node> graph;
+    int timeRemaining;
 
     /**
      * A method to calculate the most profitable path between 2 nodes.
@@ -30,7 +31,7 @@ public abstract class EscapeAlgorithm extends Algorithm {
     public int totalGoldOnMap() {
         int totalGold = 0;
 
-        for (Node n : escapeState.getVertices()) {
+        for (Node n : graph) {
             totalGold += n.getTile().getGold();
         }
 

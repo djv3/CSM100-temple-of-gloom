@@ -1,6 +1,5 @@
 package student;
 
-import game.EscapeState;
 import game.Node;
 
 import java.util.*;
@@ -13,10 +12,12 @@ public class Dijkstra extends EscapeAlgorithm {
     /**
      * Constructor that takes the current game state (which should be post-orb-retrieval, pre-escape movement).
      *
-     * @param _escapeState = mandatory parameter to set the inherited EscapeState property
+     * @param _graph = the set of nodes comprising the map
+     * @param _timeRemaining = the time in seconds that has been granted to escape the map
      */
-    public Dijkstra(EscapeState _escapeState) {
-        escapeState = _escapeState;
+    public Dijkstra(Set<Node> _graph, int _timeRemaining) {
+        graph = _graph;
+        timeRemaining = _timeRemaining;
     }
 
     @Override
@@ -38,7 +39,7 @@ public class Dijkstra extends EscapeAlgorithm {
         HashMap<Node, Integer> visitedNodes = new HashMap<>();
 
         // Store all nodes in the first map
-        for (Node n : escapeState.getVertices()) {
+        for (Node n : graph) {
             unvisitedNodes.put(n, Integer.MAX_VALUE);
         }
         // Special case for the starting node, as we know the distance is 0
@@ -119,7 +120,7 @@ public class Dijkstra extends EscapeAlgorithm {
      */
     public List<Node> pathWithDetours(Node _startNode, Node _endNode) {
         List<Node> path = shortestPath(_startNode, _endNode);
-        int totalTime = escapeState.getTimeRemaining();
+        int totalTime = timeRemaining;
         int timeRemaining = totalTime - Dijkstra.timeTakenToTraversePath(_startNode, path);
 
         boolean detoursFound;
@@ -193,7 +194,7 @@ public class Dijkstra extends EscapeAlgorithm {
             // If there's gold left...
             if (totalGoldOnPath(wanderingPath) < totalGoldOnMap()
                 // and there's time to go and get the gold...
-                && (wanderingPath.size() == 0 || timeTakenToTraversePath(_startNode, wanderingPath) + timeTakenToTraversePath(wanderingPath.get(wanderingPath.size() - 1), pathFromStartToGold) + timeTakenToTraversePath(pathFromStartToGold.get(pathFromStartToGold.size() - 1), pathFromGoldToEnd) < escapeState.getTimeRemaining())) {
+                && (wanderingPath.size() == 0 || timeTakenToTraversePath(_startNode, wanderingPath) + timeTakenToTraversePath(wanderingPath.get(wanderingPath.size() - 1), pathFromStartToGold) + timeTakenToTraversePath(pathFromStartToGold.get(pathFromStartToGold.size() - 1), pathFromGoldToEnd) < timeRemaining)) {
                 // ... go and get it
                 wanderingPath.addAll(pathFromStartToGold);
             } else {
