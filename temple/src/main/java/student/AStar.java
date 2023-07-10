@@ -5,8 +5,8 @@ import game.Node;
 
 import java.util.*;
 
-public class Astar extends EscapeAlgorithm {
-    public Astar(EscapeState _escapeState) {
+public class AStar extends EscapeAlgorithm {
+    public AStar(EscapeState _escapeState) {
         escapeState = _escapeState;
     }
 
