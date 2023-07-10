@@ -16,19 +16,12 @@ public class AStar extends EscapeAlgorithm {
         int timeRemaining = escapeState.getTimeRemaining();
         System.out.println("time remaining: " + timeRemaining);
         TreeSet<Node> nearestNodesWithGold = new TreeSet<>(Comparator.comparingInt(o -> estimate(o, start)));
-        TreeSet<Node> topNodesWithGold = new TreeSet<>(Comparator.comparingInt(o -> o.getTile().getGold()));
+
         escapeState.getVertices().forEach(n -> {
             if (n.getTile().getGold() > 0) {
                 nearestNodesWithGold.add(n);
             }
         });
-
-        //reverse the order of the set so that the node with the most gold is first
-        var prioritySet = (TreeSet<Node>) topNodesWithGold.descendingSet();
-
-        while (nearestNodesWithGold.size() < topNodesWithGold.size()) {
-            nearestNodesWithGold.add(prioritySet.pollFirst());
-        }
 
         List<Node> path = new ArrayList<>();
 
