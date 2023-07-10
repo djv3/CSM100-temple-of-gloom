@@ -1,15 +1,26 @@
 package student;
 
-import game.EscapeState;
 import game.Node;
 
 import java.util.*;
 
+/**
+ * A maze escape algorithm using Dijkstra's algorithm to calculate the shortest path between 2 nodes.
+ */
 public class Dijkstra extends EscapeAlgorithm {
-    public Dijkstra(EscapeState _escapeState) {
-        escapeState = _escapeState;
+
+    /**
+     * Constructor that takes the current game state (which should be post-orb-retrieval, pre-escape movement).
+     *
+     * @param _graph = the set of nodes comprising the map
+     * @param _timeRemaining = the time in seconds that has been granted to escape the map
+     */
+    public Dijkstra(Set<Node> _graph, int _timeRemaining) {
+        graph = _graph;
+        timeRemaining = _timeRemaining;
     }
 
+    @Override
     public List<Node> bestPath(Node _startNode, Node _endNode) {
         List<Node> detourAlgorithm = pathWithDetours(_startNode, _endNode);
         List<Node> wanderingAlgorithm = wanderingPath(_startNode, _endNode);
@@ -21,13 +32,14 @@ public class Dijkstra extends EscapeAlgorithm {
         }
     }
 
+    @Override
     public List<Node> shortestPath(Node _startNode, Node _endNode) {
         // 2 maps, one for nodes that have been visited and one for nodes that haven't
         HashMap<Node, Integer> unvisitedNodes = new HashMap<>();
         HashMap<Node, Integer> visitedNodes = new HashMap<>();
 
         // Store all nodes in the first map
-        for (Node n : escapeState.getVertices()) {
+        for (Node n : graph) {
             unvisitedNodes.put(n, Integer.MAX_VALUE);
         }
         // Special case for the starting node, as we know the distance is 0
@@ -98,9 +110,17 @@ public class Dijkstra extends EscapeAlgorithm {
         return shortestPath;
     }
 
+    /**
+     * A method that takes Dijkstra's shortest path, checks if there are any tiles with gold adjacent to the path,
+     * and modifies the path to collect that gold and return to the original path.
+     *
+     * @param _startNode = the node from which to calculate the path
+     * @param _endNode   = the node to which to calculate the path (i.e. the exit)
+     * @return           = the path to take from _startNode to _endNode that includes any 1-step gold detours
+     */
     public List<Node> pathWithDetours(Node _startNode, Node _endNode) {
         List<Node> path = shortestPath(_startNode, _endNode);
-        int totalTime = escapeState.getTimeRemaining();
+        int totalTime = timeRemaining;
         int timeRemaining = totalTime - Dijkstra.timeTakenToTraversePath(_startNode, path);
 
         boolean detoursFound;
@@ -139,6 +159,15 @@ public class Dijkstra extends EscapeAlgorithm {
         return path;
     }
 
+    /**
+     * A method that checks if there's extra time to collect gold after considering Dijkstra's shortest path to the
+     * exit, and if so collects the nearest gold and repeats.
+     *
+     * @param _startNode = the node from which to calculate the path
+     * @param _endNode   = the node to which to calculate the path (i.e. the exit)
+     * @return           = the path to take from _startNode to _endNode that includes gold collected before the
+     *                     shortest path has to be taken to avoid running out of time
+     */
     public List<Node> wanderingPath(Node _startNode, Node _endNode) {
         // It's possible that the shortest path collects all gold anyway, so no wandering is required
         List<Node> path = shortestPath(_startNode, _endNode);
@@ -151,23 +180,46 @@ public class Dijkstra extends EscapeAlgorithm {
         boolean needToGetOut = false;
 
         while (!needToGetOut) {
-            // Find the path to the nearest gold
-            List<Node> pathFromStartToGold;
-            if (wanderingPath.size() == 0) {
-                pathFromStartToGold = findPathToClosestNodeWithGold(_startNode, wanderingPath);
-            } else {
-                pathFromStartToGold = findPathToClosestNodeWithGold(wanderingPath.get(wanderingPath.size() - 1), wanderingPath);
-            }
-
-            // Find the path from the nearest gold to the end
-            List<Node> pathFromGoldToEnd = shortestPath(pathFromStartToGold.get(pathFromStartToGold.size() - 1), _endNode);
-
             // If there's gold left...
-            if (totalGoldOnPath(wanderingPath) < totalGoldOnMap()
-                // and there's time to go and get the gold...
-                && (wanderingPath.size() == 0 || timeTakenToTraversePath(_startNode, wanderingPath) + timeTakenToTraversePath(wanderingPath.get(wanderingPath.size() - 1), pathFromStartToGold) + timeTakenToTraversePath(pathFromStartToGold.get(pathFromStartToGold.size() - 1), pathFromGoldToEnd) < escapeState.getTimeRemaining())) {
-                // ... go and get it
-                wanderingPath.addAll(pathFromStartToGold);
+            if (totalGoldOnPath(wanderingPath) < totalGoldOnMap()) {
+                // ... find the path to the nearest gold
+
+                List<Node> pathFromStartToGold;
+                if (wanderingPath.size() == 0) {
+                    pathFromStartToGold = findPathToClosestNodeWithGold(_startNode, wanderingPath);
+                } else {
+                    pathFromStartToGold = findPathToClosestNodeWithGold(wanderingPath.get(wanderingPath.size() - 1), wanderingPath);
+                }
+
+                // Find the path from the nearest gold to the end
+                List<Node> pathFromGoldToEnd = shortestPath(pathFromStartToGold.get(pathFromStartToGold.size() - 1), _endNode);
+
+                int timeForStartToEndOfCurrentPath, timeForCurrentPathToGold, timeForGoldToEnd;
+
+                // Calculate the time taken for each leg of the proposed journey
+                if (wanderingPath.size() == 0) {
+                    timeForStartToEndOfCurrentPath = 0;
+                    timeForCurrentPathToGold = timeTakenToTraversePath(_startNode, pathFromStartToGold);
+                } else {
+                    timeForStartToEndOfCurrentPath = timeTakenToTraversePath(_startNode, wanderingPath);
+                    timeForCurrentPathToGold = timeTakenToTraversePath(wanderingPath.get(wanderingPath.size() - 1), pathFromStartToGold);
+                }
+                timeForGoldToEnd = timeTakenToTraversePath(pathFromStartToGold.get(pathFromStartToGold.size() - 1), pathFromGoldToEnd);
+
+                // If there's time to go and get the gold...
+                if (timeForStartToEndOfCurrentPath + timeForCurrentPathToGold + timeForGoldToEnd < timeRemaining) {
+                    // ... go and get it
+                    wanderingPath.addAll(pathFromStartToGold);
+                } else {
+                    // Get to the exit
+                    if (wanderingPath.size() == 0) {
+                        wanderingPath = shortestPath(_startNode, _endNode);
+                    } else {
+                        wanderingPath.addAll(shortestPath(wanderingPath.get(wanderingPath.size() - 1), _endNode));
+                    }
+
+                    needToGetOut = true;
+                }
             } else {
                 // Get to the exit
                 wanderingPath.addAll(shortestPath(wanderingPath.get(wanderingPath.size() - 1), _endNode));
@@ -178,7 +230,18 @@ public class Dijkstra extends EscapeAlgorithm {
         return wanderingPath;
     }
 
+    /**
+     * A breadth-first search to find the closest node that contains any gold.
+     *
+     * @param _startingNode = the node from which to start looking for nodes containing gold
+     * @param _visitedNodes = a collection of nodes from which gold has already been collected (as this logic is
+     *                        carried out before movement begins so gold still exists in the escape state)
+     * @return              = a Node object that is the closest to _startingNode that contains gold
+     */
     public List<Node> findPathToClosestNodeWithGold(Node _startingNode, List<Node> _visitedNodes) {
+        // If all the gold's already accounted for, stop looking!
+
+
         Set<Node> neighboursToCheck = _startingNode.getNeighbours();
         Node target = null;
 
