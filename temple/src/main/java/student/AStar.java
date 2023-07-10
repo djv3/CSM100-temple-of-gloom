@@ -22,63 +22,51 @@ public class AStar extends EscapeAlgorithm {
     @Override
     public List<Node> bestPath(Node start, Node exit) {
         int timeRemaining = escapeState.getTimeRemaining();
-        System.out.println("time remaining: " + timeRemaining);
+        System.out.println("Time remaining: " + timeRemaining);
         TreeSet<Node> nearestNodesWithGold = new TreeSet<>(Comparator.comparingInt(o -> estimate(o, start)));
-
+        TreeSet<Node> nodesWithGold = new TreeSet<>(Comparator.comparingInt(o -> o.getTile().getGold()));
         escapeState.getVertices().forEach(n -> {
             if (n.getTile().getGold() > 0) {
-                nearestNodesWithGold.add(n);
+                nodesWithGold.add(n);
             }
         });
+
+        // Get the top 10 nodes with the most gold and add them to the nearestNodesWithGold set.
+        for (int i = 0; i < 15; i++) {
+            Node node = nodesWithGold.pollLast();
+            if (node != null) {
+                nearestNodesWithGold.add(node);
+            }
+        }
 
         List<Node> path = new ArrayList<>();
 
         path.add(start);
 
-        int pathLength = pathLength(path);
+        for (Node node : nearestNodesWithGold) {
+            Node lastNode = path.get(path.size() - 1);
 
-        while (pathLength <= timeRemaining) {
-            Node lastNodeInPath = path.get(path.size() - 1);
-            if (lastNodeInPath.equals(exit)) {
-                break;
-            }
-            List<Node> pathToExit = shortestPath(lastNodeInPath, exit);
-
-            if (pathLength(path) + pathLength(pathToExit) == timeRemaining) {
-                path.addAll(pathToExit);
+            if (node.equals(exit)) {
+                path.addAll(shortestPath(lastNode, node));
                 break;
             }
 
-            Node nextNode = nearestNodesWithGold.pollFirst();
+            List<Node> pathToNextNode = shortestPath(lastNode, node);
 
-            if (nextNode == null) {
-                path.addAll(pathToExit);
+            Node lastNodeInNextMove = pathToNextNode.get(pathToNextNode.size() - 1);
+
+            List<Node> pathToExit = shortestPath(lastNodeInNextMove, exit);
+
+            List<Node> escapePath = shortestPath(lastNode, exit);
+
+            // if the time remaining is greater than the current path, plus the path to the next node, plus the path to the exit from that node, we are safe to add to the current path.
+            if (timeRemaining > pathLength(path) + pathLength(pathToNextNode) + pathLength(pathToExit) + pathLength(escapePath)) {
+                path.addAll(pathToNextNode);
+            } else {
+                path.addAll(escapePath);
+                System.out.println("Escaping!, path length: " + pathLength(path));
                 break;
             }
-
-            List<Node> nearestNodeWithGoldPath = shortestPath(lastNodeInPath, nextNode);
-
-            if (nearestNodeWithGoldPath.size() == 0) {
-                path.addAll(pathToExit);
-                break;
-            }
-
-            Node lastNodeInNewestPath = nearestNodeWithGoldPath.get(nearestNodeWithGoldPath.size() - 1);
-
-            if (lastNodeInNewestPath.equals(exit)) {
-                path.addAll(nearestNodeWithGoldPath);
-                break;
-            }
-
-
-            if (pathLength(path) + pathLength(nearestNodeWithGoldPath) + pathLength(shortestPath(lastNodeInNewestPath, exit)) + pathLength(pathToExit) > timeRemaining) {
-                path.addAll(pathToExit);
-                break;
-            }
-
-            path.addAll(nearestNodeWithGoldPath);
-
-            pathLength = pathLength(path);
         }
         path.remove(0);
         return path;
@@ -90,6 +78,9 @@ public class AStar extends EscapeAlgorithm {
      * @return The length of the path.
      */
     public int pathLength(List<Node> path) {
+        if (path.size() == 1) {
+            return 0;
+        }
         int pathLength = 0;
         for (int i = 0; i < path.size() - 1; i++) {
             pathLength += path.get(i).getEdge(path.get(i + 1)).length;

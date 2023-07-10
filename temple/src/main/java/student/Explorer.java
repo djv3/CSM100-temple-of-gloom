@@ -103,10 +103,11 @@ public class Explorer {
         System.out.println("A Star gold on path: " + astar.totalGoldOnPath(aStarRoute));
         System.out.println("A Star route length: " + AStar.timeTakenToTraversePath(state.getCurrentNode(), aStarRoute));
         while (aStarRoute.size() > 0) {
-            state.moveTo(aStarRoute.remove(0));
+
             if (state.getCurrentNode().getTile().getGold() > 0) {
                 state.pickUpGold();
             }
+            state.moveTo(aStarRoute.remove(0));
         }
     }
 }
