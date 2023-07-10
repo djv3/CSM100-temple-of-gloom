@@ -53,6 +53,9 @@ public class AStar extends EscapeAlgorithm {
 
             List<Node> pathToNextNode = shortestPath(lastNode, node);
 
+            if (pathToNextNode.size() == 1) {
+                continue;
+            }
             Node lastNodeInNextMove = pathToNextNode.get(pathToNextNode.size() - 1);
 
             List<Node> pathToExit = shortestPath(lastNodeInNextMove, exit);
