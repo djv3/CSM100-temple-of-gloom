@@ -9,27 +9,79 @@ public class Astar extends EscapeAlgorithm {
     public Astar(EscapeState _escapeState) {
         escapeState = _escapeState;
     }
+
     @Override
     public List<Node> bestPath(Node start, Node exit) {
-//        int timeRemaining = escapeState.getTimeRemaining();
-//        TreeSet<Node> nearestNodesWithGold = new TreeSet<>(Comparator.comparingInt(o -> estimate(o, start)));
-//        escapeState.getVertices().forEach(n -> {
-//            if (n.getTile().getGold() > 0) {
-//                nearestNodesWithGold.add(n);
-//            }
-//        });
-//        List<Node> path = new ArrayList<>();
-//
-//        int pathLength = timeTakenToTraversePath(start, path);
-//
-//        while (pathLength < timeRemaining) {
-//            Node nearestNodeWithGold = nearestNodesWithGold.pollFirst();
-//            List<Node> pathChunk = bestPath(start, nearestNodeWithGold);
-//            Node lastNodeInChunk = pathChunk.get(pathChunk.size() - 1);
-//            Node lastNodeInPath = path.get(path.size() - 1);
-//            pathLength = timeTakenToTraversePath(start, path);
-//        }
-        return getPath(start, exit);
+        int timeRemaining = escapeState.getTimeRemaining();
+        System.out.println("time remaining: " + timeRemaining);
+        TreeSet<Node> nearestNodesWithGold = new TreeSet<>(Comparator.comparingInt(o -> estimate(o, start)));
+
+        escapeState.getVertices().forEach(n -> {
+            if (n.getTile().getGold() > 0) {
+                nearestNodesWithGold.add(n);
+            }
+        });
+
+        List<Node> path = new ArrayList<>();
+
+        path.add(start);
+
+        int pathLength = pathLength(path);
+
+        while (pathLength <= timeRemaining) {
+            Node lastNodeInPath = path.get(path.size() - 1);
+            if (lastNodeInPath.equals(exit)) {
+                break;
+            }
+            List<Node> pathToExit = shortestPath(lastNodeInPath, exit);
+
+            if (pathLength(path) + pathLength(pathToExit) == timeRemaining) {
+                path.addAll(pathToExit);
+                break;
+            }
+
+            Node nearestNodeWithGold = nearestNodesWithGold.pollFirst();
+
+            if (nearestNodeWithGold == null) {
+                System.out.println("There's no more gold. The path length is: " + pathLength);
+                path.addAll(pathToExit);
+                break;
+            }
+
+            List<Node> nearestNodeWithGoldPath = shortestPath(lastNodeInPath, nearestNodeWithGold);
+
+            if (nearestNodeWithGoldPath.size() == 0) {
+                System.out.println("The path to the nearest node with gold is of zero length");
+                path.addAll(pathToExit);
+                break;
+            }
+
+            Node lastNodeInNewPath = nearestNodeWithGoldPath.get(nearestNodeWithGoldPath.size() - 1);
+            var pathToExitFromNearestNodeWithGold = shortestPath(lastNodeInNewPath, exit);
+
+            int totalPathLengths = (pathLength(path) + pathLength(nearestNodeWithGoldPath) + pathLength(pathToExitFromNearestNodeWithGold));
+
+            if (totalPathLengths > timeRemaining) {
+                System.out.println("The total path length is greater than the time remaining");
+                path.addAll(pathToExit);
+                break;
+            }
+
+            path.addAll(nearestNodeWithGoldPath);
+
+            pathLength = pathLength(path);
+            System.out.println("path length: " + pathLength);
+        }
+        path.remove(0);
+        return path;
+    }
+
+    public int pathLength(List<Node> path) {
+        int pathLength = 0;
+        for (int i = 0; i < path.size() - 1; i++) {
+            pathLength += path.get(i).getEdge(path.get(i + 1)).length;
+        }
+        return pathLength;
     }
 
     public int estimate(Node node, Node exit) {
@@ -40,6 +92,7 @@ public class Astar extends EscapeAlgorithm {
 
         return Math.max(Math.abs(currentColumn - exitColumn), Math.abs(currentRow - exitRow));
     }
+
     @Override
     public List<Node> shortestPath(Node start, Node exit) {
         return getPath(start, exit);
@@ -78,5 +131,5 @@ public class Astar extends EscapeAlgorithm {
             }
         }
         return path;
-}
+    }
 }
