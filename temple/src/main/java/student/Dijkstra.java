@@ -194,13 +194,30 @@ public class Dijkstra extends EscapeAlgorithm {
                 // Find the path from the nearest gold to the end
                 List<Node> pathFromGoldToEnd = shortestPath(pathFromStartToGold.get(pathFromStartToGold.size() - 1), _endNode);
 
+                int timeForStartToEndOfCurrentPath, timeForCurrentPathToGold, timeForGoldToEnd;
+
+                // Calculate the time taken for each leg of the proposed journey
+                if (wanderingPath.size() == 0) {
+                    timeForStartToEndOfCurrentPath = 0;
+                    timeForCurrentPathToGold = timeTakenToTraversePath(_startNode, pathFromStartToGold);
+                } else {
+                    timeForStartToEndOfCurrentPath = timeTakenToTraversePath(_startNode, wanderingPath);
+                    timeForCurrentPathToGold = timeTakenToTraversePath(wanderingPath.get(wanderingPath.size() - 1), pathFromStartToGold);
+                }
+                timeForGoldToEnd = timeTakenToTraversePath(pathFromStartToGold.get(pathFromStartToGold.size() - 1), pathFromGoldToEnd);
+
                 // If there's time to go and get the gold...
-                if (wanderingPath.size() == 0 || timeTakenToTraversePath(_startNode, wanderingPath) + timeTakenToTraversePath(wanderingPath.get(wanderingPath.size() - 1), pathFromStartToGold) + timeTakenToTraversePath(pathFromStartToGold.get(pathFromStartToGold.size() - 1), pathFromGoldToEnd) < timeRemaining) {
+                if (timeForStartToEndOfCurrentPath + timeForCurrentPathToGold + timeForGoldToEnd < timeRemaining) {
                     // ... go and get it
                     wanderingPath.addAll(pathFromStartToGold);
                 } else {
                     // Get to the exit
-                    wanderingPath.addAll(shortestPath(wanderingPath.get(wanderingPath.size() - 1), _endNode));
+                    if (wanderingPath.size() == 0) {
+                        wanderingPath = shortestPath(_startNode, _endNode);
+                    } else {
+                        wanderingPath.addAll(shortestPath(wanderingPath.get(wanderingPath.size() - 1), _endNode));
+                    }
+
                     needToGetOut = true;
                 }
             } else {
