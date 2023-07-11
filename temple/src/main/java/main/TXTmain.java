@@ -2,6 +2,8 @@ package main;
 
 import game.GameState;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,6 +28,14 @@ public class TXTmain {
         Optional<Long> seed = Utilities.parseSeedArgs(args);
 
         int totalScore = 0;
+
+        try {
+            BufferedWriter writer = new BufferedWriter(new FileWriter("logger.csv"));
+            writer.write("Seed,Algorithm used,Gold on map,Gold collected,Escape succeeded,Escape errored");
+            writer.close();
+        } catch (IOException _e) {
+            System.out.println("There was a problem logging the run results.");
+        }
 
         for (int i = 0; i < numTimesToRun; i++) {
             totalScore += GameState.runNewGame((seed.isPresent() ? seed.get() : 0), false);
