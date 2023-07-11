@@ -63,16 +63,14 @@ public class AStar extends EscapeAlgorithm {
             List<Node> escapePath = shortestPath(lastNode, exit);
 
             // if the time remaining is greater than the current path, plus the path to the next node, plus the path to the exit from that node, we are safe to add to the current path.
-            if (timeRemaining > pathLength(path) + pathLength(pathToNextNode) + pathLength(pathToExit) + pathLength(escapePath)) {
+            if (timeRemaining > pathLength(path) + pathLength(pathToNextNode) + pathLength(pathToExit)) {
                 path.addAll(pathToNextNode);
             } else {
                 path.addAll(escapePath);
-                System.out.println("Escaping!, path length: " + pathLength(path));
                 break;
             }
         }
         if (pathLength(path) > timeRemaining) {
-            System.out.println("Escaping!, path length: " + pathLength(path));
             path = shortestPath(start, exit);
         }
 
@@ -109,8 +107,8 @@ public class AStar extends EscapeAlgorithm {
         int currentRow = node.getTile().getRow();
         int exitColumn = other.getTile().getColumn();
         int exitRow = other.getTile().getRow();
-        int manhattanDistance = Math.abs(currentColumn - exitColumn) + Math.abs(currentRow - exitRow);
-        return manhattanDistance + Cavern.MAX_GOLD_VALUE - node.getTile().getGold();
+
+        return Math.abs(currentColumn - exitColumn) + Math.abs(currentRow - exitRow);
     }
 
     /**
