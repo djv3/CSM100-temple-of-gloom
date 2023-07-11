@@ -14,6 +14,15 @@ public abstract class EscapeAlgorithm extends Algorithm {
     int timeRemaining;
 
     /**
+     * A method to calculate the shortest path between 2 nodes.
+     *
+     * @param _startNode = the node from which to calculate the path
+     * @param _endNode   = the node to which to calculate the path
+     * @return           = the path to take from _startNode to _endNode
+     */
+    public abstract List<Node> shortestPath(Node _startNode, Node _endNode);
+
+    /**
      * A method to calculate the most profitable path between 2 nodes.
      *
      * @param _startNode = the node from which to calculate the path
