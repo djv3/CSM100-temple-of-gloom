@@ -83,15 +83,4 @@ public class AStarExplore extends ExploreAlgorithm{
         });
         return openSet.peek();
     }
-
-    /**
-     * A method is never used for explore phase of the project
-     * //TODO refactoring of abstract class Algorithm is required
-     */
-
-    @Override
-    public List<Node> shortestPath(Node _startNode, Node _endNode) {
-        return null;
-    }
-
 }
