@@ -27,6 +27,11 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
     testImplementation("junit:junit:4.13.1")
     errorprone("com.google.errorprone:error_prone_core:latest.release")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
+
+    // Mockito dependencies
+    testImplementation("org.mockito:mockito-core:4.0.0")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -39,4 +44,28 @@ java {
 application {
     // Define the main class for the application.
     mainClass.set(project.findProperty("chooseMain").toString())
+}
+
+// Spotless configuration
+spotless {
+    java {
+        // Specify the code formatting rules using Google Java Format
+        googleJavaFormat()
+    }
+}
+
+// Configure the Spotless tasks
+val spotlessApplyTask = tasks.named("spotlessApply")
+val spotlessJavaTask = tasks.named("spotlessJava")
+
+spotlessApplyTask.configure {
+    dependsOn(spotlessJavaTask)
+}
+
+tasks.named("spotlessCheck") {
+    dependsOn(spotlessApplyTask)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
