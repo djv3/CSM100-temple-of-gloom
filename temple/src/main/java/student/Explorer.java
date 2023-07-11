@@ -57,6 +57,7 @@ public class Explorer {
 
             NodeA nextMove = explorePath.getNextMove(state, current);
 
+            // In case of high complexity of curve there should be decision to move back
             while (nextMove == null){
 
                 NodeA backNode = current.parent();
