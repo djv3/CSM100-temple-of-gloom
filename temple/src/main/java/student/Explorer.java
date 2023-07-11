@@ -1,12 +1,12 @@
 package student;
 
-import java.io.IOException;
 import java.util.*;
 
 import game.EscapeState;
 import game.ExplorationState;
 import game.Node;
 import game.NodeStatus;
+
 
 public class Explorer {
 
@@ -40,36 +40,40 @@ public class Explorer {
      *
      * @param state the information available at the current state
      */
+    public void explore(ExplorationState state)  {
 
-    public void explore(ExplorationState state) throws IOException {
-        if (state.getDistanceToTarget() == 0) {
-            return;
+        ExploreAlgorithm.entryPoint = new NodeStatus(state.getCurrentLocation(),state.getDistanceToTarget());
+        AStarExplore explorePath = new AStarExplore();
+
+        while (true){
+
+            NodeA current = explorePath.getCurrentNode();
+
+            // skip first move because we are already on the entry title
+            if(current.nodeStatus().nodeID() != ExploreAlgorithm.entryPoint.nodeID())
+                state.moveTo(current.nodeStatus().nodeID());
+
+            // checks if we reach the node wit the Orb and exists from while-cycle
+            if(current.nodeStatus().distanceToTarget() == 0)
+                break;
+
+            // the best option to move next from the current node
+            NodeA nextMove = explorePath.getNextMove(state, current);
+
+            /*
+             * In case of the high complexity of the curve, there should be a decision to move back
+             * It happens when we do not have any possible node to move
+             * we track back until we have found the next unvisited node(next Move not empty)
+             * {@param backNode} is a current node on backtrack
+             */
+            while (nextMove == null){
+                NodeA backNode = current.parent();
+                state.moveTo(backNode.nodeStatus().nodeID()); // makes one step on backtrack
+                current = backNode;
+                nextMove = explorePath.getNextMoveTraceBack(state, backNode);
+            }
         }
-        //previous node
-        ArrayDeque<Long> savedMoves = new ArrayDeque<>();
-        ArrayDeque<Long> visitedPath = new ArrayDeque<>();
-
-       while (state.getDistanceToTarget() > 0) {
-           // push current location onto path taken
-           visitedPath.push(state.getCurrentLocation());
-           // find all neighbors and order with the neighbor closest to the target first
-           List<NodeStatus> neighbors = state.getNeighbours().stream().filter(neighbor -> !visitedPath.contains(neighbor.nodeID()))
-                   .sorted(Comparator.comparing(NodeStatus::nodeID).reversed().thenComparing(NodeStatus::compareTo)).toList();
-                  // .map(NodeStatus::nodeID).toList();
-           if (!neighbors.isEmpty()) {
-               state.moveTo(neighbors.get(0).nodeID());
-               // add the first neighbor to the saved moves in case we need to visit it again
-               savedMoves.addFirst(state.getCurrentLocation());
-           }else{
-               // no more neighbors, backtrack to the last available neighbor
-               savedMoves.removeFirst();
-               state.moveTo(savedMoves.peekFirst());
-           }
-       }
-
     }
-
-
     /**
      * Escape from the cavern before the ceiling collapses, trying to collect as much
      * gold as possible along the way. Your solution must ALWAYS escape before time runs

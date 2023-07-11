@@ -2,14 +2,12 @@ package game;
 
 import gui.GUI;
 import student.Explorer;
-import student.LogHelper;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.*;
-import java.util.logging.Logger;
 
 import static game.Constants.*;
 
