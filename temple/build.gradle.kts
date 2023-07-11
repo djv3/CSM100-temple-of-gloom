@@ -13,6 +13,7 @@ plugins {
     id("io.freefair.lombok") version "8.0.1"
     id("net.ltgt.errorprone") version "latest.release"
     id("com.diffplug.spotless") version "6.19.0"
+    id("com.adarshr.test-logger") version "3.2.0"
 }
 
 
