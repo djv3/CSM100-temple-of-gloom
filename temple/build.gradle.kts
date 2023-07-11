@@ -55,16 +55,12 @@ spotless {
     }
 }
 
-// Configure the Spotless tasks
-val spotlessApplyTask = tasks.named("spotlessApply")
-val spotlessJavaTask = tasks.named("spotlessJava")
-
-spotlessApplyTask.configure {
-    dependsOn(spotlessJavaTask)
+tasks.named("spotlessApply") {
+    this.logger.log(LogLevel.INFO, "Running spotless apply")
 }
 
 tasks.named("spotlessCheck") {
-    dependsOn(spotlessApplyTask)
+    this.logger.log(LogLevel.INFO, "Running spotless check")
 }
 
 tasks.test {
