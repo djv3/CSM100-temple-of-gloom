@@ -26,7 +26,7 @@ public class AStarExplore extends ExploreAlgorithm{
     public AStarExplore(){
         closedSet = new PriorityQueue<>();
         openSet = new PriorityQueue<>();
-        NodeA start = new NodeA( entrePoint, entrePoint.distanceToTarget(), 0, null);
+        NodeA start = new NodeA(entryPoint, entryPoint.distanceToTarget(), 0, null);
         openSet.add(start);
     }
 

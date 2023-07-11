@@ -42,26 +42,33 @@ public class Explorer {
      */
     public void explore(ExplorationState state)  {
 
-        ExploreAlgorithm.entrePoint = new NodeStatus(state.getCurrentLocation(),state.getDistanceToTarget());
+        ExploreAlgorithm.entryPoint = new NodeStatus(state.getCurrentLocation(),state.getDistanceToTarget());
         AStarExplore explorePath = new AStarExplore();
 
         while (true){
 
             NodeA current = explorePath.getCurrentNode();
 
-            if(current.nodeStatus().nodeID() != ExploreAlgorithm.entrePoint.nodeID())
+            // skip first move because we are already on the entry title
+            if(current.nodeStatus().nodeID() != ExploreAlgorithm.entryPoint.nodeID())
                 state.moveTo(current.nodeStatus().nodeID());
 
+            // checks if we reach the node wit the Orb and exists from while-cycle
             if(current.nodeStatus().distanceToTarget() == 0)
                 break;
 
+            // the best option to move next from the current node
             NodeA nextMove = explorePath.getNextMove(state, current);
 
-            // In case of high complexity of curve there should be decision to move back
+            /*
+             * In case of the high complexity of the curve, there should be a decision to move back
+             * It happens when we do not have any possible node to move
+             * we track back until we have found the next unvisited node(next Move not empty)
+             * {@param backNode} is a current node on backtrack
+             */
             while (nextMove == null){
-
                 NodeA backNode = current.parent();
-                state.moveTo(backNode.nodeStatus().nodeID());
+                state.moveTo(backNode.nodeStatus().nodeID()); // makes one step on backtrack
                 current = backNode;
                 nextMove = explorePath.getNextMoveTraceBack(state, backNode);
             }

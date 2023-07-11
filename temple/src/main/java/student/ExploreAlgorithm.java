@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 public abstract class ExploreAlgorithm extends Algorithm {
 
-    public static NodeStatus entrePoint;
+    public static NodeStatus entryPoint;
 
 
     public abstract  NodeA getCurrentNode();
