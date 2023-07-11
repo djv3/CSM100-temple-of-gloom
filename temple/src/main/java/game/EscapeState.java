@@ -51,4 +51,6 @@ public interface EscapeState {
      * and if it reaches 0 before you escape, you have failed to escape.
      */
     int getTimeRemaining();
+
+    void setEscapeAlgorithmUsed(String dijkstra);
 }

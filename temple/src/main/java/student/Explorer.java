@@ -110,8 +110,10 @@ public class Explorer {
 
         if (EscapeAlgorithm.totalGoldOnPath(dijkstraRoute) > EscapeAlgorithm.totalGoldOnPath(aStarRoute)) {
             escapeRoute = dijkstraRoute;
+            state.setEscapeAlgorithmUsed("Dijkstra");
         } else {
             escapeRoute = aStarRoute;
+            state.setEscapeAlgorithmUsed("A*");
         }
 
         while (escapeRoute.size() > 0) {

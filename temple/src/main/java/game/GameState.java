@@ -3,6 +3,8 @@ package game;
 import gui.GUI;
 import student.Explorer;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,6 +36,12 @@ public class GameState implements ExplorationState, EscapeState {
     private boolean escapeSucceeded = false;
     private boolean exploreErrored = false;
     private boolean escapeErrored = false;
+
+    private String escapeAlgorithmUsed;
+
+    public void setEscapeAlgorithmUsed(String _escapeAlgorithmUsed) {
+        escapeAlgorithmUsed = _escapeAlgorithmUsed;
+    }
 
     public GameState(Path exploreCavernPath, Path escapeCavernPath) {
         try {
@@ -171,6 +179,21 @@ public class GameState implements ExplorationState, EscapeState {
             output(gui, "Your code caused an error during the escape phase. Please see console output.");
             t.printStackTrace();
             escapeErrored = true;
+        }
+
+        try {
+            int goldOnMap = 0;
+
+            for (Node n : getVertices()) {
+                goldOnMap += n.getTile().getOriginalGold();
+            }
+
+            BufferedWriter writer = new BufferedWriter(new FileWriter("logger.csv", true));
+            writer.append("\r\n");
+            writer.append(seed + "," + escapeAlgorithmUsed + "," + goldOnMap + "," + goldCollected + "," + escapeSucceeded + "," + escapeErrored);
+            writer.close();
+        } catch (IOException _e) {
+            System.out.println("There was a problem logging the run results.");
         }
 
         if (!escapeSucceeded) {
