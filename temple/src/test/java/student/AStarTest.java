@@ -20,10 +20,10 @@ class AStarTest {
   @AfterEach
   void tearDown() {}
 
-//  @Test
-//  void bestPath() {
-//    assertEquals(1, 2);
-//  }
+  //  @Test
+  //  void bestPath() {
+  //    assertEquals(1, 2);
+  //  }
 
   @Test
   void pathLength() {

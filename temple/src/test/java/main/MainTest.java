@@ -3,14 +3,16 @@ package main;
 import static org.junit.jupiter.api.Assertions.*;
 
 import game.GameState;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Scanner;
 import lombok.Data;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.RepetitionInfo;
+import org.junit.jupiter.api.*;
 
-class TXTmainTest {
+class MainTest {
 
   @BeforeEach
   void setUp() {}
@@ -19,7 +21,7 @@ class TXTmainTest {
   void tearDown() {}
 
   @RepeatedTest(24)
-  void givenSeed_whenRun_ThenReturnScore(RepetitionInfo repetitionInfo) {
+  void givenSeed_whenRun_ThenReturnScoreAtLeastHalfOfLeagueResult(RepetitionInfo repetitionInfo) {
     var seeds =
         Arrays.asList(
             new LeagueResult(-4152836868077314850L, 47912, 1.26, 60134),
@@ -51,6 +53,51 @@ class TXTmainTest {
     int score = seeds.get(repetition - 1).getScore();
     int result = GameState.runNewGame(seed, false);
     assertTrue(result >= score / 2);
+  }
+
+  @Test
+  void regressionTest() throws IOException {
+    String filename = "currentAverage.txt";
+    int previousAverage;
+    int numTimesToRun = 100;
+    int totalScore = 0;
+    for (int seed = 0; seed < numTimesToRun; seed++) {
+      totalScore += GameState.runNewGame(seed, false);
+    }
+    int averageScore = totalScore / numTimesToRun;
+
+    previousAverage = getPreviousAverage(filename);
+    if (previousAverage == 0) {
+      writeAverageToFile(filename, averageScore);
+    } else {
+      assertTrue(averageScore >= previousAverage);
+    }
+  }
+
+  int getPreviousAverage(String filename) {
+    int previousAverage = 0;
+    try {
+      File file = new File(filename);
+      Scanner scanner = new Scanner(file);
+      while (scanner.hasNextLine()) {
+        previousAverage = Integer.parseInt(scanner.nextLine());
+      }
+    } catch (FileNotFoundException e) {
+      return 0;
+    }
+    return previousAverage;
+  }
+
+  boolean writeAverageToFile(String filename, int averageScore) {
+    try {
+      FileWriter writer = new FileWriter(filename);
+      writer.write(Integer.toString(averageScore));
+      writer.close();
+    } catch (IOException e) {
+      e.printStackTrace();
+      return false;
+    }
+    return true;
   }
 }
 
