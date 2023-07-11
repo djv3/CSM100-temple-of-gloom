@@ -22,28 +22,23 @@ public class AStar extends EscapeAlgorithm {
      */
     @Override
     public List<Node> bestPath(Node start, Node exit) {
-        System.out.println("Time remaining: " + timeRemaining);
         TreeSet<Node> nearestNodesWithGold = new TreeSet<>(Comparator.comparingInt(o -> estimate(o, start)));
-        TreeSet<Node> nodesWithGold = new TreeSet<>(Comparator.comparingInt(o -> o.getTile().getGold()));
+
         graph.forEach(n -> {
-            if (n.getTile().getGold() > 0) {
-                nodesWithGold.add(n);
+            if (n.getTile().getGold() > 0 && !n.equals(start)) {
+                nearestNodesWithGold.add(n);
             }
         });
 
-        // Get the top 10 nodes with the most gold and add them to the nearestNodesWithGold set.
-        for (int i = 0; i < 15; i++) {
-            Node node = nodesWithGold.pollLast();
-            if (node != null) {
-                nearestNodesWithGold.add(node);
-            }
-        }
-
         List<Node> path = new ArrayList<>();
-
         path.add(start);
 
+        if (nearestNodesWithGold.isEmpty()) {
+            path.addAll(shortestPath(start, exit));
+        }
+
         for (Node node : nearestNodesWithGold) {
+
             Node lastNode = path.get(path.size() - 1);
 
             if (node.equals(exit)) {
@@ -53,16 +48,12 @@ public class AStar extends EscapeAlgorithm {
 
             List<Node> pathToNextNode = shortestPath(lastNode, node);
 
-            if (pathToNextNode.size() == 1 || pathToNextNode.size() == 0) {
-                continue;
-            }
             Node lastNodeInNextMove = pathToNextNode.get(pathToNextNode.size() - 1);
 
             List<Node> pathToExit = shortestPath(lastNodeInNextMove, exit);
 
             List<Node> escapePath = shortestPath(lastNode, exit);
 
-            // if the time remaining is greater than the current path, plus the path to the next node, plus the path to the exit from that node, we are safe to add to the current path.
             if (timeRemaining > pathLength(path) + pathLength(pathToNextNode) + pathLength(pathToExit)) {
                 path.addAll(pathToNextNode);
             } else {
@@ -70,11 +61,16 @@ public class AStar extends EscapeAlgorithm {
                 break;
             }
         }
+        Node lastNode = path.get(path.size() - 1);
+        if (!lastNode.equals(exit)) {
+            path.addAll(shortestPath(lastNode, exit));
+        }
+
         if (pathLength(path) > timeRemaining) {
             path = shortestPath(start, exit);
         }
 
-        path.remove(0);
+        path.remove(start);
         return path;
     }
 
