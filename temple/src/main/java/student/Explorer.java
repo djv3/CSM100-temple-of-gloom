@@ -105,8 +105,10 @@ public class Explorer {
         List<Node> escapeRoute;
 
         if (EscapeAlgorithm.totalGoldOnPath(dijkstraRoute) > EscapeAlgorithm.totalGoldOnPath(aStarRoute)) {
+            System.out.println("Dijkstra route is better");
             escapeRoute = dijkstraRoute;
         } else {
+            System.out.println("A* route is better");
             escapeRoute = aStarRoute;
         }
 
