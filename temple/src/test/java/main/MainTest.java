@@ -1,12 +1,13 @@
 package main;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
 
 import game.GameState;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.IOException;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Scanner;
 import lombok.Data;
@@ -77,27 +78,25 @@ class MainTest {
   int getPreviousAverage(String filename) {
     int previousAverage = 0;
     try {
-      File file = new File(filename);
-      Scanner scanner = new Scanner(file);
+      var reader = Files.newBufferedReader(Paths.get(filename), UTF_8);
+      Scanner scanner = new Scanner(reader);
       while (scanner.hasNextLine()) {
         previousAverage = Integer.parseInt(scanner.nextLine());
       }
-    } catch (FileNotFoundException e) {
+    } catch (IOException e) {
       return 0;
     }
     return previousAverage;
   }
 
-  boolean writeAverageToFile(String filename, int averageScore) {
+  void writeAverageToFile(String filename, int averageScore) {
     try {
-      FileWriter writer = new FileWriter(filename);
+      BufferedWriter writer = Files.newBufferedWriter(Paths.get(filename), UTF_8);
       writer.write(Integer.toString(averageScore));
       writer.close();
     } catch (IOException e) {
-      e.printStackTrace();
-      return false;
+      System.out.println("Error writing to file");
     }
-    return true;
   }
 }
 
