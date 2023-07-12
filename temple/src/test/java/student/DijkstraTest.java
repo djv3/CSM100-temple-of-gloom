@@ -32,7 +32,7 @@ class DijkstraTest {
      *  Edges have the following weights:
      *  1-2: 11, 2-3:  9
      *  1-4:  7, 3-5:  6
-     *  5-6: 11
+     *                    5-6: 11
      *  4-7:  3, 5-9:  7
      *  7-8: 14, 8-9:  7
      */
@@ -91,13 +91,13 @@ class DijkstraTest {
     @Test
     void testFindPathToClosestNodeWithGold() {
         // From 1,1 the method should return the path to 2,1 (i.e. just 1 node)
-        List<Node> actualPath = dijkstra.findPathToClosestNodeWithGold(cavern.getNodeAt(1,1), new ArrayList<>());
+        List<Node> actualPath = dijkstra.findPathToClosestNodeWithGold(cavern.getNodeAt(1,1), cavern.getNodeAt(2,4), new ArrayList<>());
         List<Node> expectedPath = new ArrayList<>();
         expectedPath.add(cavern.getNodeAt(2,1));
         assertEquals(expectedPath, actualPath);
 
         // From 3,3 the method should return the path to 1,3 (i.e. 2,3 -> 1,3)
-        actualPath = dijkstra.findPathToClosestNodeWithGold(cavern.getNodeAt(3,3), new ArrayList<>());
+        actualPath = dijkstra.findPathToClosestNodeWithGold(cavern.getNodeAt(3,3), cavern.getNodeAt(2,4), new ArrayList<>());
         expectedPath = new ArrayList<>();
         expectedPath.add(cavern.getNodeAt(2,3));
         expectedPath.add(cavern.getNodeAt(1,3));
@@ -107,7 +107,7 @@ class DijkstraTest {
         List<Node> visitedNodes = new ArrayList<>();
         visitedNodes.add(cavern.getNodeAt(1,2));
         visitedNodes.add(cavern.getNodeAt(1,3));
-        actualPath = dijkstra.findPathToClosestNodeWithGold(cavern.getNodeAt(3,3), visitedNodes);
+        actualPath = dijkstra.findPathToClosestNodeWithGold(cavern.getNodeAt(3,3), cavern.getNodeAt(2,4), visitedNodes);
         expectedPath = new ArrayList<>();
         expectedPath.add(cavern.getNodeAt(3,2));
         expectedPath.add(cavern.getNodeAt(3,1));
