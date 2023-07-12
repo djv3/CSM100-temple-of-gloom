@@ -32,7 +32,6 @@ public class AStar extends EscapeAlgorithm {
     nodesWithGold.sort(Comparator.comparingInt(o -> o.getTile().getGold()));
     Collections.reverse(nodesWithGold);
 
-    // Get the 10 nodes with the most gold and add them to the topNodesWithGold list
     for (int i = 0; i < Math.min(10, nodesWithGold.size()); i++) {
       topNodesWithGold.add(nodesWithGold.get(i));
     }
