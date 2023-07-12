@@ -7,6 +7,7 @@ import game.ExplorationState;
 import game.Node;
 import game.NodeStatus;
 
+
 public class Explorer {
 
     /**
@@ -100,12 +101,12 @@ public class Explorer {
         int timeRemaining = state.getTimeRemaining();
         Set<Node> vertices = (Set<Node>) state.getVertices();
 
-    Dijkstra dijkstra = new Dijkstra(vertices, timeRemaining);
-    AStar astar = new AStar(vertices, timeRemaining);
+        Dijkstra dijkstra = new Dijkstra(vertices, timeRemaining);
+        AStar astar = new AStar(vertices, timeRemaining);
 
-    List<Node> dijkstraRoute = dijkstra.bestPath(state.getCurrentNode(), state.getExit());
-    List<Node> aStarRoute = astar.bestPath(state.getCurrentNode(), state.getExit());
-    List<Node> escapeRoute;
+        List<Node> dijkstraRoute = dijkstra.bestPath(state.getCurrentNode(), state.getExit());
+        List<Node> aStarRoute = astar.bestPath(state.getCurrentNode(), state.getExit());
+        List<Node> escapeRoute;
 
         if (EscapeAlgorithm.totalGoldOnPath(dijkstraRoute) > EscapeAlgorithm.totalGoldOnPath(aStarRoute)) {
             escapeRoute = dijkstraRoute;
@@ -113,11 +114,11 @@ public class Explorer {
             escapeRoute = aStarRoute;
         }
 
-    while (escapeRoute.size() > 0) {
-      if (state.getCurrentNode().getTile().getGold() > 0) {
-        state.pickUpGold();
-      }
-      state.moveTo(escapeRoute.remove(0));
+        while (escapeRoute.size() > 0) {
+            if (state.getCurrentNode().getTile().getGold() > 0) {
+                state.pickUpGold();
+            }
+            state.moveTo(escapeRoute.remove(0));
+        }
     }
-  }
 }
