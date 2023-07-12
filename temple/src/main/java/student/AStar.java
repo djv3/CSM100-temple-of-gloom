@@ -19,33 +19,33 @@ public class AStar extends EscapeAlgorithm {
    */
   @Override
   public List<Node> bestPath(Node start, Node exit) {
-    TreeSet<Node> nearestNodesWithGold =
-        new TreeSet<>(Comparator.comparingInt(o -> estimate(o, start)));
-    TreeSet<Node> topNodesWithGold =
-        new TreeSet<>(Comparator.comparingInt(o -> o.getTile().getGold()));
+    ArrayList<Node> nodesWithGold = new ArrayList<>();
+    ArrayList<Node> topNodesWithGold = new ArrayList<>();
 
     graph.forEach(
         n -> {
           if (n.getTile().getGold() > 0 && !n.equals(start)) {
-            topNodesWithGold.add(n);
+            nodesWithGold.add(n);
           }
         });
 
-    for (int i = 0; i < 15; i++) {
-      Node node = topNodesWithGold.pollLast();
-      if (node != null) {
-        nearestNodesWithGold.add(node);
-      }
+    nodesWithGold.sort(Comparator.comparingInt(o -> o.getTile().getGold()));
+    Collections.reverse(nodesWithGold);
+
+    // Get the 10 nodes with the most gold and add them to the topNodesWithGold list
+    for (int i = 0; i < Math.min(10, nodesWithGold.size()); i++) {
+      topNodesWithGold.add(nodesWithGold.get(i));
     }
+
 
     List<Node> path = new ArrayList<>();
     path.add(start);
 
-    if (nearestNodesWithGold.isEmpty()) {
+    if (topNodesWithGold.isEmpty()) {
       path.addAll(shortestPath(start, exit));
     }
 
-    for (Node node : nearestNodesWithGold) {
+    for (Node node : topNodesWithGold) {
 
       Node lastNode = path.get(path.size() - 1);
 
@@ -78,7 +78,9 @@ public class AStar extends EscapeAlgorithm {
       path = shortestPath(start, exit);
     }
 
-    path.remove(start);
+    if (path.size() > 0 && path.get(0).equals(start)) {
+      path.remove(0);
+    }
     return path;
   }
 
