@@ -12,14 +12,23 @@ public abstract class EscapeAlgorithm extends Algorithm {
   Set<Node> graph;
   int timeRemaining;
 
-  /**
-   * A method to calculate the most profitable path between 2 nodes.
-   *
-   * @param _startNode = the node from which to calculate the path
-   * @param _endNode = the node to which to calculate the path
-   * @return = the path to take from _startNode to _endNode
-   */
-  public abstract List<Node> bestPath(Node _startNode, Node _endNode);
+    /**
+     * A method to calculate the shortest path between 2 nodes.
+     *
+     * @param _startNode = the node from which to calculate the path
+     * @param _endNode   = the node to which to calculate the path
+     * @return           = the path to take from _startNode to _endNode
+     */
+    public abstract List<Node> shortestPath(Node _startNode, Node _endNode);
+
+    /**
+     * A method to calculate the most profitable path between 2 nodes.
+     *
+     * @param _startNode = the node from which to calculate the path
+     * @param _endNode   = the node to which to calculate the path
+     * @return           = the path to take from _startNode to _endNode
+     */
+    public abstract List<Node> bestPath(Node _startNode, Node _endNode);
 
   /**
    * A method to calculate how much gold is present on a map. This assumes no movement has yet been

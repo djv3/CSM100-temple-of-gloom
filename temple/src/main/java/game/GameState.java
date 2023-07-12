@@ -1,14 +1,16 @@
 package game;
 
-import static game.Constants.*;
 
 import gui.GUI;
+import student.Explorer;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.util.*;
-import student.Explorer;
+
+import static game.Constants.*;
 
 public class GameState implements ExplorationState, EscapeState {
 

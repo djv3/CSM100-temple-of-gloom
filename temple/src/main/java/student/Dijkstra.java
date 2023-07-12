@@ -185,14 +185,12 @@ public class Dijkstra extends EscapeAlgorithm {
       if (totalGoldOnPath(wanderingPath) < totalGoldOnMap()) {
         // ... find the path to the nearest gold
 
-        List<Node> pathFromStartToGold;
-        if (wanderingPath.size() == 0) {
-          pathFromStartToGold = findPathToClosestNodeWithGold(_startNode, wanderingPath);
-        } else {
-          pathFromStartToGold =
-              findPathToClosestNodeWithGold(
-                  wanderingPath.get(wanderingPath.size() - 1), wanderingPath);
-        }
+                List<Node> pathFromStartToGold;
+                if (wanderingPath.size() == 0) {
+                    pathFromStartToGold = findPathToClosestNodeWithGold(_startNode, _endNode, wanderingPath);
+                } else {
+                    pathFromStartToGold = findPathToClosestNodeWithGold(wanderingPath.get(wanderingPath.size() - 1), _endNode, wanderingPath);
+                }
 
         // Find the path from the nearest gold to the end
         List<Node> pathFromGoldToEnd =
@@ -240,40 +238,45 @@ public class Dijkstra extends EscapeAlgorithm {
     return wanderingPath;
   }
 
-  /**
-   * A breadth-first search to find the closest node that contains any gold.
-   *
-   * @param _startingNode = the node from which to start looking for nodes containing gold
-   * @param _visitedNodes = a collection of nodes from which gold has already been collected (as
-   *     this logic is carried out before movement begins so gold still exists in the escape state)
-   * @return = a Node object that is the closest to _startingNode that contains gold
-   */
-  public List<Node> findPathToClosestNodeWithGold(Node _startingNode, List<Node> _visitedNodes) {
-    // If all the gold's already accounted for, stop looking!
+    /**
+     * A breadth-first search to find the closest node that contains any gold.
+     *
+     * @param _startingNode = the node from which to start looking for nodes containing gold
+     * @param _visitedNodes = a collection of nodes from which gold has already been collected (as this logic is
+     *                        carried out before movement begins so gold still exists in the escape state)
+     * @return              = a Node object that is the closest to _startingNode that contains gold
+     */
+    public List<Node> findPathToClosestNodeWithGold(Node _startingNode, Node _exit, List<Node> _visitedNodes) {
+        Set<Node> neighboursToCheck = _startingNode.getNeighbours();
+        Node target = null;
 
-    Set<Node> neighboursToCheck = _startingNode.getNeighbours();
-    Node target = null;
+        while (target == null) {
+            List<Node> neighboursWithGold = new ArrayList<>();
+            for (Node neighbour : neighboursToCheck) {
+                if (!_visitedNodes.contains(neighbour)) {
+                    if (neighbour.getTile().getGold() > 0) {
+                        neighboursWithGold.add(neighbour);
+                    }
+                }
+            }
 
-    while (target == null) {
-      for (Node neighbour : neighboursToCheck) {
-        if (!_visitedNodes.contains(neighbour)) {
-          if (neighbour.getTile().getGold() > 0) {
-            target = neighbour;
-            break;
-          }
+            if (neighboursWithGold.size() == 0) {
+                Set<Node> newNeighbours = new HashSet<>();
+                for (Node neighbour : neighboursToCheck) {
+                    newNeighbours.addAll(neighbour.getNeighbours());
+                }
+                neighboursToCheck = newNeighbours;
+            } else {
+                int furthestDistance = 0;
+                for (Node neighbour : neighboursWithGold) {
+                    int nodeDistanceFromExit = timeTakenToTraversePath(neighbour, shortestPath(neighbour, _exit));
+                    if (nodeDistanceFromExit > furthestDistance) {
+                        furthestDistance = nodeDistanceFromExit;
+                        target = neighbour;
+                    }
+                }
+            }
         }
-      }
-
-      if (target == null) {
-        Set<Node> newNeighbours = new HashSet<>();
-        for (Node neighbour : neighboursToCheck) {
-          for (Node neighbourNeighbour : neighbour.getNeighbours()) {
-            newNeighbours.add(neighbourNeighbour);
-          }
-        }
-        neighboursToCheck = newNeighbours;
-      }
-    }
 
     return shortestPath(_startingNode, target);
   }
