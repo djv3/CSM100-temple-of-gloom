@@ -2,7 +2,10 @@ build:
 	gradle build
 
 test:
-	gradle test
+	gradle clean test
+
+testAll:
+	gradle clean testAll
 
 run:
 	gradle run
