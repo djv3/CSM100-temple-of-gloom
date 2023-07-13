@@ -14,7 +14,6 @@ plugins {
     id("net.ltgt.errorprone") version "latest.release"
     id("com.diffplug.spotless") version "6.19.0"
     id("com.adarshr.test-logger") version "3.2.0"
-    id("java")
 }
 
 
