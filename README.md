@@ -21,15 +21,18 @@ To run Temple-Of-Gloom use options -s and -n
 
 ### Testing
 
-To run the tests, run `gradle test` or `make format` in the root directory of the project.
+To run the tests, run `gradle clean test` or `make test` in the root directory of the project.
+Note: the default test command excludes the regression test and the test that compares against
+league table results. To run these as well, use `make testAll` or `gradle clean testAll`. Clean
+is required to ensure that the cache is cleared and the tests are run from scratch.
 
 ### Formatting
 
 To format the code, run `gradle spotlessApply` or `make format` in the root directory of the project.
 
-### Cleaning
+### Linting
 
-To clean the project, run `gradle clean` or `make clean` in the root directory of the project.
+To lint the code, run `gradle spotlessCheck` or `make lint` in the root directory of the project.
 
 ### Documentation
 

@@ -13,6 +13,7 @@ plugins {
     id("io.freefair.lombok") version "8.0.1"
     id("net.ltgt.errorprone") version "latest.release"
     id("com.diffplug.spotless") version "6.19.0"
+    id("com.adarshr.test-logger") version "3.2.0"
 }
 
 
@@ -24,9 +25,12 @@ repositories {
 dependencies {
     // This dependency is used by the application.
     implementation("com.google.guava:guava:31.1-jre")
-    testImplementation("org.junit.jupiter:junit-jupiter:5.8.1")
-    testImplementation("junit:junit:4.13.1")
     errorprone("com.google.errorprone:error_prone_core:latest.release")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
+
+    // Mockito dependencies
+    testImplementation("org.mockito:mockito-core:4.0.0")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.
@@ -41,15 +45,30 @@ application {
     mainClass.set(project.findProperty("chooseMain").toString())
 }
 
-dependencies {
-    testImplementation("junit:junit:4.13.1")
-    testImplementation(platform("org.junit:junit-bom:5.9.3"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
+// Spotless configuration
+spotless {
+    java {
+        // Specify the code formatting rules using Google Java Format
+        googleJavaFormat()
+    }
+}
 
-    // Mockito dependencies
-    testImplementation("org.mockito:mockito-core:4.0.0")
+tasks.named("spotlessApply") {
+    this.logger.log(LogLevel.INFO, "Running spotless apply")
+}
+
+tasks.named("spotlessCheck") {
+    this.logger.log(LogLevel.INFO, "Running spotless check")
 }
 
 tasks.test {
+    filter {
+        excludeTestsMatching("*regression*")
+        excludeTestsMatching("*league")
+    }
+    useJUnitPlatform()
+}
+
+tasks.create("testAll", Test::class) {
     useJUnitPlatform()
 }
