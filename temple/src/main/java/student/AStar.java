@@ -36,7 +36,6 @@ public class AStar extends EscapeAlgorithm {
       topNodesWithGold.add(nodesWithGold.get(i));
     }
 
-
     List<Node> path = new ArrayList<>();
     path.add(start);
 
@@ -80,7 +79,26 @@ public class AStar extends EscapeAlgorithm {
     if (path.size() > 0 && path.get(0).equals(start)) {
       path.remove(0);
     }
+
     return path;
+  }
+
+  int getNeighboursGold(Node node) {
+    int gold = 0;
+    for (Node neighbour : node.getNeighbours()) {
+      gold += neighbour.getTile().getGold();
+    }
+    return gold;
+  }
+
+  List<Node> getNeighboursWithGold(Node node) {
+    List<Node> neighboursWithGold = new ArrayList<>();
+    for (Node neighbour : node.getNeighbours()) {
+      if (neighbour.getTile().getGold() > 200) {
+        neighboursWithGold.add(neighbour);
+      }
+    }
+    return neighboursWithGold;
   }
 
   /**
@@ -93,11 +111,18 @@ public class AStar extends EscapeAlgorithm {
     if (path.size() == 1) {
       return 0;
     }
-    int pathLength = 0;
-    for (int i = 0; i < path.size() - 1; i++) {
-      pathLength += path.get(i).getEdge(path.get(i + 1)).length;
+    int total = 0;
+    Node previous = null;
+
+    for (Node node : path) {
+      if (previous == null) {
+        previous = node;
+        continue;
+      }
+      total += previous.getEdge(node).length;
+      previous = node;
     }
-    return pathLength;
+    return total;
   }
 
   /**
