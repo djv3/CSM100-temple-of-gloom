@@ -28,6 +28,7 @@ dependencies {
     errorprone("com.google.errorprone:error_prone_core:latest.release")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.1")
+    testImplementation("junit:junit:4.13.1")
 
     // Mockito dependencies
     testImplementation("org.mockito:mockito-core:4.0.0")
