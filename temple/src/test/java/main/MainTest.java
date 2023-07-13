@@ -15,14 +15,8 @@ import org.junit.jupiter.api.*;
 
 class MainTest {
 
-  @BeforeEach
-  void setUp() {}
-
-  @AfterEach
-  void tearDown() {}
-
   @RepeatedTest(24)
-  void givenSeed_whenRun_ThenReturnScoreAtLeastHalfOfLeagueResult(RepetitionInfo repetitionInfo) {
+  void test_league(RepetitionInfo repetitionInfo) {
     var seeds =
         Arrays.asList(
             new LeagueResult(-4152836868077314850L, 47912, 1.26, 60134),
@@ -57,7 +51,7 @@ class MainTest {
   }
 
   @Test
-  void regressionTest() throws IOException {
+  void test_regression() {
     String filename = "currentAverage.txt";
     int previousAverage;
     int numTimesToRun = 100;
