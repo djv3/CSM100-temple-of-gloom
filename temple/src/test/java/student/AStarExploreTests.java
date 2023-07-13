@@ -1,3 +1,5 @@
+package student;
+
 import game.NodeStatus;
 import org.junit.Before;
 import org.junit.jupiter.api.*;
