@@ -2,6 +2,9 @@ package student;
 
 import game.ExplorationState;
 import game.Node;
+import game.NodeStatus;
+
+import java.util.Collection;
 import java.util.List;
 import java.util.PriorityQueue;
 
@@ -37,6 +40,7 @@ public class AStarExplore extends ExploreAlgorithm{
      * @return current node {@param current} of the search
      * as a result we have received the best option to move
      */
+    @Override
     public NodeA getCurrentNode(){
         NodeA current = openSet.poll();
         openSet.clear();
@@ -51,9 +55,9 @@ public class AStarExplore extends ExploreAlgorithm{
      * @param current = curren node on A-star search track
      * @return returns the new node to move
      */
-    public NodeA getNextMove(ExplorationState state, NodeA current){
+    public NodeA getNextMove(Collection< NodeStatus > neighbours, NodeA current){
 
-        List<NodeA> neighboursA = getNeighborsA(state.getNeighbours(),current);
+        List<NodeA> neighboursA = getNeighborsA(neighbours,current);
 
         for (NodeA n:neighboursA){
             if(!is_node_in_list(n, openSet) && !is_node_in_list(n, closedSet)){
@@ -61,9 +65,11 @@ public class AStarExplore extends ExploreAlgorithm{
                 openSet.add(n);
             }else {
                 int costPathToNode = current.g() + 1;
-                if(costPathToNode < n.g() && is_node_in_list(n, closedSet)){
+                if(costPathToNode < n.g() && is_node_in_list(n, openSet)){
                     closedSet.remove(n);
-                    openSet.add(n);
+                    openSet.remove(n);
+                    NodeA nUpdated = new NodeA(n.nodeStatus(),costPathToNode+n.nodeStatus().distanceToTarget(),costPathToNode, n.parent());
+                    openSet.add(nUpdated);
                 }
             }
         }
@@ -76,9 +82,9 @@ public class AStarExplore extends ExploreAlgorithm{
      * @param backNode = the current node on traceback
      * @return returns the best option to move from {@param openSet}
      */
-    public NodeA getNextMoveTraceBack(ExplorationState state, NodeA backNode){
+    public NodeA getNextMoveTraceBack(Collection< NodeStatus > neighbours, NodeA backNode){
         // add neighbors in case they are not visited ones yet
-        getNeighborsA(state.getNeighbours(),backNode).forEach(n -> {
+        getNeighborsA(neighbours,backNode).forEach(n -> {
             if (!is_node_in_list(n, closedSet)) openSet.add(n);
         });
         return openSet.peek();

@@ -38,3 +38,16 @@ application {
     // Define the main class for the application.
     mainClass.set(project.findProperty("chooseMain").toString())
 }
+
+dependencies {
+    testImplementation("junit:junit:4.13.1")
+    testImplementation(platform("org.junit:junit-bom:5.9.3"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+
+    // Mockito dependencies
+    testImplementation("org.mockito:mockito-core:4.0.0")
+}
+
+tasks.test {
+    useJUnitPlatform()
+}

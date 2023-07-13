@@ -58,7 +58,7 @@ public class Explorer {
                 break;
 
             // the best option to move next from the current node
-            NodeA nextMove = explorePath.getNextMove(state, current);
+            NodeA nextMove = explorePath.getNextMove(state.getNeighbours(), current);
 
             /*
              * In case of the high complexity of the curve, there should be a decision to move back
@@ -70,7 +70,7 @@ public class Explorer {
                 NodeA backNode = current.parent();
                 state.moveTo(backNode.nodeStatus().nodeID()); // makes one step on backtrack
                 current = backNode;
-                nextMove = explorePath.getNextMoveTraceBack(state, backNode);
+                nextMove = explorePath.getNextMoveTraceBack(state.getNeighbours(), backNode);
             }
         }
     }
