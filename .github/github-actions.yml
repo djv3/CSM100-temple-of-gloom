@@ -1,0 +1,17 @@
+name: Temple of Gloom
+run-name: ${{ github.workflow }} - ${{ github.run_number }}
+#on: [pull_request]
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - make build
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - make testAll
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - make lint
