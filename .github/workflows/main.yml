@@ -8,6 +8,8 @@ jobs:
     steps:
       - name: checkout repo
         uses: actions/checkout@main
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
       - name: build project
         run: make build
   test:
@@ -15,6 +17,8 @@ jobs:
     steps:
       - name: checkout repo
         uses: actions/checkout@main
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
       - name: test project
         run: make testAll
   lint:
@@ -22,5 +26,7 @@ jobs:
     steps:
       - name: checkout repo
         uses: actions/checkout@main
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
       - name: lint project
         run: make lint
