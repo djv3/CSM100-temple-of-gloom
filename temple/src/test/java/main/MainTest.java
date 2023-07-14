@@ -4,7 +4,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.*;
 
 import game.GameState;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
