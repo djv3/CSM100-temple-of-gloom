@@ -6,12 +6,21 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - run: make build
+      - name: checkout repo
+        uses: actions/checkout@main
+      - name: build project
+        run: make build
   test:
     runs-on: ubuntu-latest
     steps:
-      - run: make testAll
+      - name: checkout repo
+        uses: actions/checkout@main
+      - name: test project
+        run: make testAll
   lint:
     runs-on: ubuntu-latest
     steps:
-      - run: make lint
+      - name: checkout repo
+        uses: actions/checkout@main
+      - name: lint project
+        run: make lint
