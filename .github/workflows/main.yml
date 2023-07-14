@@ -1,41 +1,14 @@
-name: Temple of Gloom
-run-name: ${{ github.workflow }} - ${{ github.run_number }}
-#on: [pull_request]
-on: [push]
+on:
+  push:
+    branches:
+      - main
+
 jobs:
-  build:
+  release-on-push:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
+      - uses: rymndhng/release-on-push-action@master
         with:
-          distribution: 'adopt'
-          java-version: 20
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-      - name: build project
-        run: make build
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'adopt'
-          java-version: 20
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-      - name: test project
-        run: make testAll
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'adopt'
-          java-version: 20
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-      - name: lint project
-        run: make lint
+          bump_version_scheme: minor
